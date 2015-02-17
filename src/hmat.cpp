@@ -4,11 +4,12 @@
 HMat::HMat() {}
 
 HMat::HMat
-(Eigen::MatrixXd& S, int numLevels, int maxRank, AdmissType admiss,
+(Eigen::MatrixXd& A, int maxRank, int numLevels, AdmissType admiss,
  int xSize, int ySize)
-//: maxRank_(maxRank), numLevels_(numLevels), admiss_(admiss)
+  : maxRank_(maxRank), numLevels_(numLevels), admissType_(admiss)
 {
 
+  /*
   Node::set_max_rank( maxRank );
   Node::set_num_levels( numLevels );
   Node::set_admissibility( admiss );
@@ -19,8 +20,15 @@ HMat::HMat
   std::cout << "# of levels : " << Node::get_num_levels() << std::endl;
   std::cout << "admissibility : " << Node::get_admissibility() << std::endl;
 #endif
+  */
 
-  root = new Node(S, numLevels, xSize, ySize);
+  treeRoot = new Node(A, numLevels, admissType_, xSize, ySize);
 }
+
+
+HMat::~HMat() {
+  DestroyNode(treeRoot);
+}
+
 
 

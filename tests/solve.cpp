@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
   //std::cout << A() << std::endl;
 
-  int numLevels = 2; //atoi(agrv[1]);
+  int numLevels = 1; //atoi(agrv[1]);
   std::vector<int> map;
   BuildNaturalToHierarchicalMap(map, nx, ny, numLevels);
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
   int maxRank = 10;
   AdmissType admiss = WEAK;
-  HMat Ah(Aperm, maxRank, numLevels,  admiss, nx, ny);
+  HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
   
   return 0;
 }

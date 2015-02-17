@@ -4,7 +4,7 @@
 #include "vec2.hpp"
 
 #include "Eigen/Dense"
-#include "Eigen/Sparse"
+//#include "Eigen/Sparse"
 
 
 enum AdmissType {
@@ -14,12 +14,26 @@ enum AdmissType {
 
 class Node {
 
+public:
+  
   enum BlockType {
     DENSE,
     LOWRANK,
     HIERARCHY,
   };
 
+  // empty constructor for debugging purpose
+  Node();
+  
+  // tree root constructor
+  Node(Eigen::MatrixXd&, int, AdmissType, int, int);
+
+public:
+  Node* child(int, int); // get child pointer
+  bool is_leaf();
+
+  
+  /*
 public:
   // global information of the tree
   static int maxRank;
@@ -35,24 +49,33 @@ public:
   static int get_max_rank();
   static int get_num_levels();
   static AdmissType get_admissibility();
+  */
   
 private:
-  Vec2 offset_; // offset of the matrix block
-  Vec2 size_;   // size of the matrix block, i.e. height and width
+  int  level_;
   Vec2 source_; // index of source cell
   Vec2 target_; // index of target cell
-  int  level_;
+  Vec2 offset_; // offset of the matrix block
+  Vec2 size_;   // size of the matrix block, i.e. height and width
+
   Node* children[4][4]; // 4=2^2 i.e. sub-divide in 2d
 
   // Matrix data :
   //  UMat and VMat for low rank factorization
   //  DMat for dense block
-  BlockType       type;
+  BlockType       blockType;
   Eigen::MatrixXd UMat;
   Eigen::MatrixXd VMat;
   Eigen::MatrixXd DMat;
   
 };
+
+
+/* --- helper functions --- */
+
+void DestroyNode(Node* node);
+
+bool Admissible( Vec2 source, Vec2 target, AdmissType admissType );
 
 
 
