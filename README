@@ -1,0 +1,5 @@
+This project aims at implementing a fast algorithm to 
+ inverse a weak-admissible h-matrix. The future plan
+ may be to use the inverse as the initial guess for
+ Newton's iteration which converges to the inverse
+ of a strong-admissible h-matrix.
