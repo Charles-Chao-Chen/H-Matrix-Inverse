@@ -3,8 +3,10 @@
 
 // Vec2 structure for variables in 2d
 struct Vec2 {
-  int x;
-  int y;
+  Vec2();
+  Vec2(int,int);
+  int x_;
+  int y_;
 };
 
 /* --- operator overloading --- */

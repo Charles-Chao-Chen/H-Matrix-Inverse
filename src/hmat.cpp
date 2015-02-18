@@ -9,25 +9,27 @@ HMat::HMat
   : maxRank_(maxRank), numLevels_(numLevels), admissType_(admiss)
 {
 
-  /*
-  Node::set_max_rank( maxRank );
-  Node::set_num_levels( numLevels );
-  Node::set_admissibility( admiss );
-
 #ifdef DEBUG
   std::cout << "Constructing tree ..." << std::endl;
-  std::cout << "max rank : " << Node::get_max_rank() << std::endl;
-  std::cout << "# of levels : " << Node::get_num_levels() << std::endl;
-  std::cout << "admissibility : " << Node::get_admissibility() << std::endl;
+  std::cout << "max rank : " << maxRank_ << std::endl;
+  std::cout << "# of levels : " << numLevels_ << std::endl;
+  std::cout << "admissibility : "
+	    << (admissType_==STRONG ? "STRONG" : "WEAK")
+	    << std::endl;
 #endif
-  */
 
-  treeRoot = new Node(A, numLevels, admissType_, xSize, ySize);
+  int  rootLevel = 0;   // the root starts from level 0
+  Vec2 rootSource(0,0); // only one source at root level
+  Vec2 rootTarget(0,0); // only one target at root level
+  Vec2 rootOffset(0,0); // no offset for the root
+  Vec2 rootSize(xSize, ySize);
+  treeRoot_ = new Node(A, rootOffset, rootSize, admissType_,
+		      rootSource, rootTarget, rootLevel, numLevels_);
 }
 
 
 HMat::~HMat() {
-  DestroyNode(treeRoot);
+  DestroyNode( treeRoot_ );
 }
 
 

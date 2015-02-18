@@ -9,16 +9,10 @@ Node::Node() {}
 Node::Node
 (Eigen::MatrixXd& A, int numLevels, AdmissType admissType,
  int xSize, int ySize)
-
-  : level_ ( 0 ),           // the root starts from level 0
-    source_( (Vec2){0,0} ), // only one cell at root level
-    target_( (Vec2){0,0} ), // only one cell at root level
-    offset_( (Vec2){0,0} ),
-    size_  ( (Vec2){xSize, ySize} )
 {
 
   if ( Admissible( source_, target_, admissType ) ) {
-
+    
   }
     
   if (level_ < numLevels-1) { // sub-divide the domain
@@ -33,6 +27,37 @@ Node::Node
   else {
     blockType = DENSE;
   }
+}
+
+
+Node::Node
+(Eigen::MatrixXd& A, Vec2 offset, Vec2 size, AdmissType admissType,
+ Vec2 source, Vec2 target, int curLevel, int numLevels)
+  : level_(curLevel),
+    source_(source), target_(target),
+    offset_(offset), size_(size)
+{
+
+  if ( Admissible( source_, target_, admissType ) ) {
+    
+  }
+
+  blockType = DENSE;
+  
+  /*
+  if (level_ < numLevels-1) { // sub-divide the domain
+
+    
+    blockType = HIERARCHY;
+
+    for(int i=0; i<4; i++)
+      for(int j=0; j<4; j++)
+	children[i][j] = new Node;
+  }
+  else {
+    blockType = DENSE;
+  }
+  */
 }
 
 

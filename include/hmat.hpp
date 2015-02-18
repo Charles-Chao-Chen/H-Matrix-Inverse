@@ -20,7 +20,7 @@ private:
   AdmissType admissType_;
 
   
-  Node* treeRoot;
+  Node* treeRoot_;
 };
 
 

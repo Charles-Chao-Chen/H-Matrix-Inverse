@@ -25,9 +25,11 @@ public:
   // empty constructor for debugging purpose
   Node();
   
-  // tree root constructor
   Node(Eigen::MatrixXd&, int, AdmissType, int, int);
 
+  Node(Eigen::MatrixXd& A, Vec2 offset, Vec2 Size, AdmissType admissType,
+       Vec2 source, Vec2 target, int curLevel, int numLevels);
+  
 public:
   Node* child(int, int); // get child pointer
   bool is_leaf();
