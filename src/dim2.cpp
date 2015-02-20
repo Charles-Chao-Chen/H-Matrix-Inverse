@@ -14,6 +14,18 @@ int Dim2::area() const {
   return x_*y_;
 }
 
+Dim2 Dim2::x_bisection() const {
+  int firstHalf  = x_ / 2;
+  int secondHalf = x_ - firstHalf;
+  return Dim2( firstHalf, secondHalf );
+}
+
+Dim2 Dim2::y_bisection() const {
+  int firstHalf  = y_ / 2;
+  int secondHalf = y_ - firstHalf;
+  return Dim2( firstHalf, secondHalf );
+}
+
 int Dim2::operator[] (const int idx) {
   switch( idx ) {
   case 0:

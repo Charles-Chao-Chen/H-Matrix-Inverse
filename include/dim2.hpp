@@ -12,9 +12,15 @@ struct Dim2 {
   // member functions
 
   int area() const;
+
+  Dim2 x_bisection() const;
+
+  Dim2 y_bisection() const;
   
   /* --- operator overloading --- */
-  
+
+  // Dim2 object can be used as int[2]
+  //  where [0] and [1] correspond to x_ and y_
   int  operator[] (const int);
 
   // member variables
