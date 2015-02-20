@@ -9,7 +9,7 @@ HEADER  = ../include/hmap.hpp
 EXE = solve
 
 OBJS =  solve.o \
-	../src/hmat.o ../src/node.o ../src/vec2.o
+	../src/hmat.o ../src/node.o ../src/dim2.o
 
 %.o : %.cpp
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -8,7 +8,7 @@ class HMat {
   
 public:
   HMat();
-  HMat(Eigen::MatrixXd&, int, int, AdmissType, int, int);
+  HMat(const Eigen::MatrixXd&, int, int, AdmissType, int, int);
 
   ~HMat();
   

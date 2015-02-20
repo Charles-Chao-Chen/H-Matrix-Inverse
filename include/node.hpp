@@ -1,7 +1,7 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
-#include "vec2.hpp"
+#include "dim2.hpp"
 
 #include "Eigen/Dense"
 //#include "Eigen/Sparse"
@@ -24,11 +24,25 @@ public:
 
   // empty constructor for debugging purpose
   Node();
-  
+
+  /*
   Node(Eigen::MatrixXd&, int, AdmissType, int, int);
 
-  Node(Eigen::MatrixXd& A, Vec2 offset, Vec2 Size, AdmissType admissType,
-       Vec2 source, Vec2 target, int curLevel, int numLevels);
+  Node(Eigen::MatrixXd& A, Dim2 offset, Dim2 Size, AdmissType admissType,
+       Dim2 source, Dim2 target, int curLevel, int numLevels);
+
+  Node
+  (const Eigen::MatrixXd& A,
+   const Dim2& offset,  const Dim2& size, const AdmissType& admissType,
+   const Dim2& source,  const Dim2& target,
+   int curLevel, int numLevels);
+  */
+  
+  Node
+  (const Eigen::MatrixXd& A,
+   const Dim2& source,  const Dim2& target,
+   const Dim2& srcSize, const Dim2& tgtSize,
+   AdmissType admissType, int curLevel, int numLevels);
   
 public:
   Node* child(int, int); // get child pointer
@@ -55,10 +69,13 @@ public:
   
 private:
   int  level_;
-  Vec2 source_; // index of source cell
-  Vec2 target_; // index of target cell
-  Vec2 offset_; // offset of the matrix block
-  Vec2 size_;   // size of the matrix block, i.e. height and width
+  Dim2 source_;  // index  of source cell
+  Dim2 target_;  // index  of target cell
+  Dim2 srcSize_; // size of the source cell
+  Dim2 tgtSize_; // size of the target cell
+  
+  //Dim2 offset_; // offset of the matrix block
+  Dim2 blockSize_;   // size   of the matrix block, i.e. length and width
 
   Node* children[4][4]; // 4=2^2 i.e. sub-divide in 2d
 
@@ -77,8 +94,17 @@ private:
 
 void DestroyNode(Node* node);
 
-bool Admissible( Vec2 source, Vec2 target, AdmissType admissType );
+bool Admissible( Dim2 source, Dim2 target, AdmissType admissType );
 
+Dim2 ZorderDim2( int idx );
+
+
+void ComputeLowRank
+(Eigen::MatrixXd& UMat, Eigen::MatrixXd& VMat,
+ const Eigen::MatrixXd& A);
+
+void Copy
+(Eigen::MatrixXd& DMat, const Eigen::MatrixXd& A);
 
 
 #endif // NODE_HPP
