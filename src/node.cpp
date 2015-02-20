@@ -1,6 +1,8 @@
 #include "node.hpp"
 
 #include <iostream>
+#include <stdio.h>
+
 
 // empty constructor for debugging purpose
 Node::Node() {}
@@ -111,6 +113,10 @@ Node::Node
     srcSize_(srcSize), tgtSize_(tgtSize)
 {
 
+#ifdef DEBUG
+  printf("Build h-tree at level : %d\n", curLevel);
+#endif
+  
   // low rank block
   if ( Admissible( source_, target_, admissType ) ) {
     blockType = LOWRANK;
@@ -146,34 +152,36 @@ Node::Node
     //       x=0    x=1
     // (which happens to be the same as the natural order)
 
-    Dim2 tgt0 = tgtSize_ / 2;
-    Dim2 tgt1 = tgtSize_ - tgt0;
-    Dim2 src0 = srcSize_ / 2;
-    Dim2 src1 = srcSize_ - src0;
-
-    Dim2 offset(0, 0);
-    
-    for (int t=0; t<4; t++) {
-      Dim2 tIdx = ZorderDim2( t );
+    // size of the children block along every dimension
+    Dim2 xTgtSize = tgtSize.x_bisection();
+    Dim2 yTgtSize = tgtSize.y_bisection();
+    Dim2 xSrcSize = srcSize.x_bisection();
+    Dim2 ySrcSize = srcSize.y_bisection();
+      
+    // offset in the matrix, starting from row 0 and column 0
+    for (int t=0, startRow=0; t<4; t++) {
+      Dim2 tIdx = ZorderIdx( t );
       Dim2 tgtChild( 2*target_ + tIdx );
-      Dim2 tgtSizeChild( tgt0[ tIdx.x_ ], tgt1[ tIdx.y_ ] );
-      offset.x_ += tgtSizeChild.area();
+      Dim2 tgtSizeChild( xTgtSize[ tIdx.x_ ], yTgtSize[ tIdx.y_ ] );
 	
-      for (int s=0; s<4; s++) {
-	Dim2 sIdx = ZorderDim2( s );
+      for (int s=0, startCol=0; s<4; s++) {
+	Dim2 sIdx = ZorderIdx( s );
 	Dim2 srcChild( 2*source_ + sIdx );
-	Dim2 srcSizeChild( src0[ sIdx.x_ ], src1[ sIdx.y_ ] );
-	offset.y_ += srcSizeChild.area();
+	Dim2 srcSizeChild( xSrcSize[ tIdx.x_ ], ySrcSize[ tIdx.y_ ] );
 
-	int  lChild = curLevel-1;	
+	int  lChild = curLevel+1;	
 	Eigen::MatrixXd Achild
-	  = A.block( offset.x_, offset.y_,
+	  = A.block( startRow, startCol,
 		     tgtSizeChild.area(), srcSizeChild.area() );
 	children[t][s] = new Node(Achild,
 				  srcChild, tgtChild,
 				  srcSizeChild, tgtSizeChild,
 				  admissType, lChild, numLevels);
+	// update column offset
+	startCol += srcSizeChild.area();
       }
+      // update row offset
+      startRow += tgtSizeChild.area();
     }
   }
 }
@@ -198,6 +206,8 @@ void DestroyNode(Node* node) {
     for (int i=0; i<4; i++)
       for (int j=0; j<4; j++)
 	DestroyNode( node->child(i,j) );
+    
+    delete node;
   }
 }
 
@@ -214,18 +224,18 @@ void ComputeLowRank
 (Eigen::MatrixXd& UMat, Eigen::MatrixXd& VMat,
  const Eigen::MatrixXd& A) {
 
-  std::cout << "Build the low rank block ..." << std::endl;
+  std::cout << "  Form the low rank block ..." << std::endl;
 }
 
 
 void Copy
 (Eigen::MatrixXd& DMat, const Eigen::MatrixXd& A) {
 
-  std::cout << "Copy the dense block..." << std::endl;
+  std::cout << "  Form the dense block..." << std::endl;
 }
 
 
-Dim2 ZorderDim2( int idx ) {
+Dim2 ZorderIdx( int idx ) {
   return Dim2( idx>>1, idx&1 );
 }
 

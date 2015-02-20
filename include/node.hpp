@@ -96,7 +96,7 @@ void DestroyNode(Node* node);
 
 bool Admissible( Dim2 source, Dim2 target, AdmissType admissType );
 
-Dim2 ZorderDim2( int idx );
+Dim2 ZorderIdx( int idx );
 
 
 void ComputeLowRank
