@@ -1,6 +1,6 @@
 #include "node.hpp"
 
-#include <iostream>
+#include <assert.h>
 #include <stdio.h>
 
 //#include "Eigen/SVD"
@@ -90,20 +90,3 @@ Node::Node
     }
   }
 }
-
-
-bool Node::is_leaf() {
-  return blockType != HIERARCHY;
-}
-
-
-Node* Node::child( int i, int j ) {
-  return children[i][j];
-}
-
-
-const EMatrix& Node::get_dense_matrix() const {
-  return DMat;
-}
-
-

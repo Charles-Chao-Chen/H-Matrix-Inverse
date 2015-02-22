@@ -3,8 +3,8 @@
 
 #include "dim2.hpp"
 #include "helper.hpp"
-#include <Eigen/Dense>
 
+#include <iostream>
 
 class Node {
 
@@ -26,9 +26,26 @@ public:
    AdmissType admissType, int curLevel, int numLevels);
   
 public:
+  bool  is_leaf() const;
+  
   Node* child(int, int); // get child pointer
-  bool  is_leaf();
-  const EMatrix& get_dense_matrix() const;
+
+  const Node* child(int, int) const;
+
+  BlockType get_block_type() const;
+
+  // for hierarchical nodes only
+  const EMatrix  get_topU() const;
+  const EMatrix  get_botU() const;
+  const EMatrix  get_topV() const;
+  const EMatrix  get_botV() const;
+
+  // for dense nodes only
+  const EMatrix& get_dmat() const;
+
+  // for low rank nodes only
+  const EMatrix& get_umat() const;
+  const EMatrix& get_vmat() const;
   
 private:
   int  level_;
@@ -49,6 +66,72 @@ private:
   EMatrix   VMat;
   EMatrix   DMat;  
 };
+
+
+inline bool Node::is_leaf() const {
+  return blockType != HIERARCHY;
+}
+
+inline Node* Node::child( int i, int j ) {
+  return children[i][j];
+}
+
+inline const Node* Node::child( int i, int j ) const {
+  return children[i][j];
+}
+
+inline const EMatrix Node::get_topU() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == HIERARCHY );
+#endif  
+  std::cout << "node::get_topU() to be implemented" << std::endl;
+  return EMatrix::Identity(2,2);
+}
+
+inline const EMatrix Node::get_botU() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == HIERARCHY );
+#endif
+  std::cout << "node::get_botU() to be implemented" << std::endl;
+  return EMatrix::Identity(2,2);
+}
+
+inline const EMatrix Node::get_topV() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == HIERARCHY );
+#endif
+  std::cout << "node::get_topV() to be implemented" << std::endl;
+  return EMatrix::Identity(2,2);
+}
+
+inline const EMatrix Node::get_botV() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == HIERARCHY );
+#endif
+  std::cout << "node::get_botV() to be implemented" << std::endl;
+  return EMatrix::Identity(2,2);
+}
+
+inline const EMatrix& Node::get_dmat() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == DENSE );
+#endif
+  return DMat;
+}
+
+inline const EMatrix& Node::get_umat() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == LOWRANK );
+#endif
+  return UMat;
+}
+
+inline const EMatrix& Node::get_vmat() const {
+#ifdef DEBUG
+  assert( node->get_block_type() == LOWRANK );
+#endif
+  return VMat;
+}
 
 
 #endif // NODE_HPP
