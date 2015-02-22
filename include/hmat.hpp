@@ -11,15 +11,20 @@ public:
   HMat(const EMatrix&, int, int, AdmissType, int, int);
   ~HMat();
 
-  void solve(EMatrix&);
+  EMatrix solve(const EMatrix&);
   
 private:
+  
+  // private functions for HODLR solver
+  EMatrix solve
+  (const EMatrix&, const Node*);
 
-  //void solve(EMatrix&, Node*);
+  EMatrix solve_2x2
+  (const EMatrix&, const Node*, int);
 
-  EMatrix solve(EMatrix&, Node*);
-
-  void solve_2x2(Node*, EMatrix&);
+  EMatrix RecoverSolution
+  (const EMatrix& x0, const EMatrix& x1, int,
+   const EMatrix& V0, const EMatrix& V1);
 
   // helper for deconstructor
   void DestroyNode(Node* node);
@@ -29,7 +34,7 @@ private:
   int numLevels_;
   AdmissType admissType_;
 
-  
+  // root of the tree
   Node* treeRoot_;
 };
 
