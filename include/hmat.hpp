@@ -9,8 +9,9 @@ class HMat {
 public:
   HMat();
   HMat(const Eigen::MatrixXd&, int, int, AdmissType, int, int);
-
   ~HMat();
+
+  void solve(Eigen::MatrixXd&);
   
 private:
 
