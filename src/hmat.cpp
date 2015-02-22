@@ -1,10 +1,12 @@
 #include "hmat.hpp"
+#include <Eigen/LU>
+
 #include <iostream>
 
 HMat::HMat() {}
 
 HMat::HMat
-(const Eigen::MatrixXd& A, int maxRank, int numLevels, AdmissType admiss,
+(const EMatrix& A, int maxRank, int numLevels, AdmissType admiss,
  int xSize, int ySize)
   : maxRank_(maxRank), numLevels_(numLevels), admissType_(admiss)
 {
@@ -38,68 +40,89 @@ HMat::~HMat() {
   DestroyNode( treeRoot_ );
 }
 
-void HMat::solve( Eigen::MatrixXd& rhs ) {
-  std::cout << "Starting fast solver ..." << std::endl;
-  solve( rhs, root );
+void HMat::DestroyNode(Node* node) {
+  if ( node->is_leaf() ) {
+    delete node;
+    return;
+  }
+  else {
+    for (int i=0; i<4; i++)
+      for (int j=0; j<4; j++)
+	DestroyNode( node->child(i,j) );
+    
+    delete node;
+  }
 }
 
-void HMat::solve( Eigen::MatrixXd& rhs, Node* node ) {
+// this is in-place solve
+void HMat::solve( EMatrix& rhs ) {
+  std::cout << "Starting fast solver ..." << std::endl;
+  solve( rhs, treeRoot_ );
+}
+
+EMatrix HMat::solve( EMatrix& rhs, Node* node ) {
   if (node->is_leaf()) {
-    return node->DMat.PartialPivLU().solve( rhs );
+    const EMatrix& denseBlock = node->get_dense_matrix();
+    //return denseBlock.PartialPivLU().solveInPlace( rhs );
+    return denseBlock.lu().solve( rhs );
   }
 
+  return EMatrix::Identity(2,2);
+  
   // solve two 2x2 sub-problems
-
-  Eigen::MatrixXd rhsSub0 = [rhs_first_half,  U0];
-  Eigen::MatrixXd rhsSub1 = [rhs_second_half, U1];
+  /*
+  EMatrix rhsSub0 = [rhs_first_half,  U0];
+  EMatrix rhsSub1 = [rhs_second_half, U1];
   
   solve_2x2( node_first_2x2, rhsSub0 );
   solve_2x2( node_last_2x2,  rhsSub1 );
 
   // extract u0, u1 and d0, d1
-  Eigen::MatrixXd d0 = rhsSub0(:, 1); // assume one column in rhs
-  Eigen::MatrixXd d1 = rhsSub0(:, 1); // assume one column in rhs
-  Eigen::MatrixXd u0 = rhsSub0(:, 2:end); // assume one column in rhs
-  Eigen::MatrixXd u1 = rhsSub0(:, 2:end); // assume one column in rhs
+  EMatrix d0 = rhsSub0(:, 1); // assume one column in rhs
+  EMatrix d1 = rhsSub0(:, 1); // assume one column in rhs
+  EMatrix u0 = rhsSub0(:, 2:end); // assume one column in rhs
+  EMatrix u1 = rhsSub0(:, 2:end); // assume one column in rhs
   
   // recover the solution of the original problem
 
   // solve the small system
   int r0 = u0.cols();
   int r1 = u1.cols();
-  Eigen::MatrixXd S = Eigen::MatrixXd::Idendity( r0+r1 );
+  EMatrix S = EMatrix::Idendity( r0+r1 );
   S.topRight( r0, r0 ) = V1^T * u1;
   S.bottomLeft( r0, r0 ) = V0^T * u0;
 
-  Eigen::MatrixXd Srhs = [V1^T*d1, V0^T*d0];
-  Eigen::MatrixXd [eta0, eta1] = S.lu().solve( Srhs );
+  EMatrix Srhs = [V1^T*d1, V0^T*d0];
+  EMatrix [eta0, eta1] = S.lu().solve( Srhs );
 
   return [d0 - u0*eta0; d1 - u1*eta1];
+  */
 }
 
 // standard HODLR solver
-void solve_2x2( Node* node, Eigen::MatrixXd rhs ) {
-
+void HMat::solve_2x2( Node* node, EMatrix& rhs ) {
+  /*
   solve_2x2( node_first_2x2, rhsSub0 );
   solve_2x2( node_last_2x2,  rhsSub1 );
 
   // extract u0, u1 and d0, d1
-  Eigen::MatrixXd d0 = rhsSub0(:, 1); // assume one column in rhs
-  Eigen::MatrixXd d1 = rhsSub0(:, 1); // assume one column in rhs
-  Eigen::MatrixXd u0 = rhsSub0(:, 2:end); // assume one column in rhs
-  Eigen::MatrixXd u1 = rhsSub0(:, 2:end); // assume one column in rhs
+  EMatrix d0 = rhsSub0(:, 1); // assume one column in rhs
+  EMatrix d1 = rhsSub0(:, 1); // assume one column in rhs
+  EMatrix u0 = rhsSub0(:, 2:end); // assume one column in rhs
+  EMatrix u1 = rhsSub0(:, 2:end); // assume one column in rhs
   
   // recover the solution of the original problem
 
   // solve the small system
   int r0 = u0.cols();
   int r1 = u1.cols();
-  Eigen::MatrixXd S = Eigen::MatrixXd::Idendity( r0+r1 );
+  EMatrix S = EMatrix::Idendity( r0+r1 );
   S.topRight( r0, r0 ) = V1^T * u1;
   S.bottomLeft( r0, r0 ) = V0^T * u0;
 
-  Eigen::MatrixXd Srhs = [V1^T*d1, V0^T*d0];
-  Eigen::MatrixXd [eta0, eta1] = S.lu().solve( Srhs );
+  EMatrix Srhs = [V1^T*d1, V0^T*d0];
+  EMatrix [eta0, eta1] = S.lu().solve( Srhs );
 
-  return [d0 - u0*eta0; d1 - u1*eta1];  
+  return [d0 - u0*eta0; d1 - u1*eta1];
+  */
 }

@@ -8,13 +8,22 @@ class HMat {
   
 public:
   HMat();
-  HMat(const Eigen::MatrixXd&, int, int, AdmissType, int, int);
+  HMat(const EMatrix&, int, int, AdmissType, int, int);
   ~HMat();
 
-  void solve(Eigen::MatrixXd&);
+  void solve(EMatrix&);
   
 private:
 
+  //void solve(EMatrix&, Node*);
+
+  EMatrix solve(EMatrix&, Node*);
+
+  void solve_2x2(Node*, EMatrix&);
+
+  // helper for deconstructor
+  void DestroyNode(Node* node);
+  
   // global information of the tree
   int maxRank_;
   int numLevels_;
