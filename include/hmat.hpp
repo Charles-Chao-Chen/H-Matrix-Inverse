@@ -15,7 +15,7 @@ public:
   
 private:
   
-  // private functions for HODLR solver
+  // the following three are helper functions for the solver
   EMatrix solve
   (const EMatrix&, const Node*);
 
