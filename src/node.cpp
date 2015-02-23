@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-//#include "Eigen/SVD"
 
 // empty constructor for debugging purpose
 Node::Node() {}
@@ -90,3 +89,48 @@ Node::Node
     }
   }
 }
+
+const EMatrix Node::get_topU() const {
+#ifdef DEBUG
+  assert( this->blockType == HIERARCHY );
+#endif
+  const EMatrix& U0 = children[0][2]->UMat;
+  const EMatrix& U1 = children[0][3]->UMat;
+  const EMatrix& U2 = children[1][2]->UMat;
+  const EMatrix& U3 = children[1][3]->UMat;
+  return FormUfrom2x2( U0, U1, U2, U3 );
+}
+
+const EMatrix Node::get_botU() const {
+#ifdef DEBUG
+  assert( this->blockType == HIERARCHY );
+#endif
+  const EMatrix& U0 = children[2][0]->UMat;
+  const EMatrix& U1 = children[2][1]->UMat;
+  const EMatrix& U2 = children[3][0]->UMat;
+  const EMatrix& U3 = children[3][1]->UMat;
+  return FormUfrom2x2( U0, U1, U2, U3 );
+}
+
+const EMatrix Node::get_topV() const {
+#ifdef DEBUG
+  assert( this->blockType == HIERARCHY );
+#endif
+  const EMatrix& V0 = children[0][2]->VMat;
+  const EMatrix& V1 = children[0][3]->VMat;
+  const EMatrix& V2 = children[1][2]->VMat;
+  const EMatrix& V3 = children[1][3]->VMat;
+  return FormVfrom2x2( V0, V1, V2, V3 );
+}
+
+const EMatrix Node::get_botV() const {
+#ifdef DEBUG
+  assert( this->blockType == HIERARCHY );
+#endif
+  const EMatrix& V0 = children[2][0]->VMat;
+  const EMatrix& V1 = children[2][1]->VMat;
+  const EMatrix& V2 = children[3][0]->VMat;
+  const EMatrix& V3 = children[3][1]->VMat;
+  return FormVfrom2x2( V0, V1, V2, V3 );
+}
+

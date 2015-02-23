@@ -53,7 +53,6 @@ private:
   Dim2 target_;  // index  of target cell
   Dim2 srcSize_; // size of the source cell
   Dim2 tgtSize_; // size of the target cell
-  //Dim2 blockSize_; // size of the matrix block, i.e. length and width
 
   Node* children[4][4]; // 4=2^2 i.e. sub-divide in 2d
 
@@ -80,55 +79,23 @@ inline const Node* Node::child( int i, int j ) const {
   return children[i][j];
 }
 
-inline const EMatrix Node::get_topU() const {
-#ifdef DEBUG
-  assert( node->get_block_type() == HIERARCHY );
-#endif  
-  std::cout << "node::get_topU() to be implemented" << std::endl;
-  return EMatrix::Identity(2,2);
-}
-
-inline const EMatrix Node::get_botU() const {
-#ifdef DEBUG
-  assert( node->get_block_type() == HIERARCHY );
-#endif
-  std::cout << "node::get_botU() to be implemented" << std::endl;
-  return EMatrix::Identity(2,2);
-}
-
-inline const EMatrix Node::get_topV() const {
-#ifdef DEBUG
-  assert( node->get_block_type() == HIERARCHY );
-#endif
-  std::cout << "node::get_topV() to be implemented" << std::endl;
-  return EMatrix::Identity(2,2);
-}
-
-inline const EMatrix Node::get_botV() const {
-#ifdef DEBUG
-  assert( node->get_block_type() == HIERARCHY );
-#endif
-  std::cout << "node::get_botV() to be implemented" << std::endl;
-  return EMatrix::Identity(2,2);
-}
-
 inline const EMatrix& Node::get_dmat() const {
 #ifdef DEBUG
-  assert( node->get_block_type() == DENSE );
+  assert( this->blockType == DENSE );
 #endif
   return DMat;
 }
 
 inline const EMatrix& Node::get_umat() const {
 #ifdef DEBUG
-  assert( node->get_block_type() == LOWRANK );
+  assert( this->blockType == LOWRANK );
 #endif
   return UMat;
 }
 
 inline const EMatrix& Node::get_vmat() const {
 #ifdef DEBUG
-  assert( node->get_block_type() == LOWRANK );
+  assert( this->blockType == LOWRANK );
 #endif
   return VMat;
 }
