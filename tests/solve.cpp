@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <stdio.h>
 
 #include "hmat.hpp"
 
@@ -18,13 +19,12 @@ int main(int argc, char *argv[]) {
   int nx = 4, ny = 4;
   Eigen::MatrixXd A;
   Laplacian(A, nx, ny);
+  std::cout << A << std::endl;
+  
 
-  //std::cout << A() << std::endl;
-
-  int numLevels = 1; //atoi(agrv[1]);
+  int numLevels = 3;
   std::vector<int> map;
   BuildNaturalToHierarchicalMap(map, nx, ny, numLevels);
-
   //std::cout << map << std::endl;
 
   int N = nx*ny;
@@ -33,12 +33,29 @@ int main(int argc, char *argv[]) {
     perm.indices()[i] = map[i];
     
   Eigen::MatrixXd Aperm = perm.transpose() * A * perm;
-    
+  std::cout << std::endl << Aperm << std::endl;
 
   int maxRank = 10;
   AdmissType admiss = WEAK;
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
+
+  // random right hand side
+  int nRhs = 2;
+  Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( N, nRhs );
+  Eigen::MatrixXd rhsPerm1 = rhs * perm;
+  Eigen::MatrixXd rhsPerm2 = perm * rhs;
+
+  Eigen::MatrixXd x1 = Ah.solve( rhs );
+  printf("Residule: %e\n", (Aperm*x1 - rhs).norm() );
   
+  /*
+    TODO: test the accuracy for the original matrix A
+  Eigen::MatrixXd x1 = Ah.solve( rhsPerm1 );
+  printf("Residule: %e\n", (A*x1 - rhs).norm() );
+  Eigen::MatrixXd x2 = Ah.solve( rhsPerm2 );
+  printf("Residule: %e\n", (A*x2 - rhs).norm() );
+  */
+    
   return 0;
 }
 
