@@ -58,8 +58,11 @@ void ComputeLowRank_SVD
   EMatrix V = svd.matrixV();
 
   // handle (nearly) zero matrix
-  if ( S(0) < eps )
+  if ( S(0) < eps ) {
+    UMat = EMatrix::Zero( A.rows(), 0 );
+    VMat = EMatrix::Zero( 0, A.cols() );
     return;
+  }
   
   U.col(0) *= S(0);
   int i=1;
