@@ -48,6 +48,7 @@ void ComputeLowRank_SVD
   
 #ifdef DEBUG
   std::cout << "  Form the low rank block ..." << std::endl;
+  std::cout << A << std::endl;
 #endif
 
   Eigen::JacobiSVD<EMatrix> svd(A, Eigen::ComputeThinU
@@ -56,17 +57,25 @@ void ComputeLowRank_SVD
   EMatrix U = svd.matrixU();
   EMatrix V = svd.matrixV();
 
-  int i=0;
+  // handle (nearly) zero matrix
+  if ( S(0) < eps )
+    return;
+  
+  U.col(0) *= S(0);
+  int i=1;
   for (; i<S.size(); i++) {
-    if (S(i+1)/S(i) > eps)
+    if (S(i)/S(i-1) > eps)
       U.col(i) *= S(i);
     else
       break;
   }
-  U.col(i) *= S(i);
-  UMat = U.leftCols(i+1);
-  VMat = V.leftCols(i+1).transpose();
+  UMat = U.leftCols(i);
+  VMat = V.leftCols(i).transpose();
+  
 #ifdef DEBUG
+  std::cout << "Matrix size : " << S.size()
+	    << " rank : " << i
+	    << std::endl;
   std::cout << "Error for low rank approximation: "
 	    << (A - UMat*VMat).norm()
 	    << std::endl;
