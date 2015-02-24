@@ -3,8 +3,7 @@
 #include <iostream>
 
 void ComputeLowRank
-(EMatrix& UMat, EMatrix& VMat,
- const EMatrix& A) {
+(EMatrix& UMat, EMatrix& VMat, const EMatrix& A) {
 
 #ifdef DEBUG
   std::cout << "  Form the low rank block ..." << std::endl;
@@ -19,6 +18,9 @@ void ComputeLowRank
   for (int c=0; c<nCol; c++) {
     for (int r=0; r<nRow; r++) {
       if (A(r,c) != 0) {
+#ifdef DEBUG
+	assert( rank < k );
+#endif
 	Ufull(r,rank) = A(r,c);
 	Vfull(rank,c) = 1;
 	rank++;
@@ -34,6 +36,36 @@ void ComputeLowRank
     UMat = Ufull.leftCols(1);
     VMat = Vfull.topRows(1);
   }
+#ifdef DEBUG
+  std::cout << "Error for low rank approximation: "
+	    << (A - UMat*VMat).norm()
+	    << std::endl;
+#endif
+}
+
+void ComputeLowRank_SVD
+(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, double eps) {
+  
+#ifdef DEBUG
+  std::cout << "  Form the low rank block ..." << std::endl;
+#endif
+
+  Eigen::JacobiSVD<EMatrix> svd(A, Eigen::ComputeThinU
+				|  Eigen::ComputeThinV);
+  Eigen::VectorXd S = svd.singularValues();
+  EMatrix U = svd.matrixU();
+  EMatrix V = svd.matrixV();
+
+  int i=0;
+  for (; i<S.size(); i++) {
+    if (S(i+1)/S(i) > eps)
+      U.col(i) *= S(i);
+    else
+      break;
+  }
+  U.col(i) *= S(i);
+  UMat = U.leftCols(i+1);
+  VMat = V.leftCols(i+1).transpose();
 #ifdef DEBUG
   std::cout << "Error for low rank approximation: "
 	    << (A - UMat*VMat).norm()

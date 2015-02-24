@@ -9,6 +9,9 @@
 void ComputeLowRank
 (EMatrix& UMat, EMatrix& VMat, const EMatrix& A);
 
+void ComputeLowRank_SVD
+(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, double eps);
+
 // compute the partial sum of the input array
 //  e.g. given : 1, 2, 3
 //       ouput : 0, 1, 3, 6
