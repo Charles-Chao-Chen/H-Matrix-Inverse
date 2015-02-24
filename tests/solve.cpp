@@ -16,13 +16,14 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
 int main(int argc, char *argv[]) {
 
 
-  int nx = 4, ny = 4;
+  int nx = 8, ny = 8;
   Eigen::MatrixXd A;
   Laplacian(A, nx, ny);
-  std::cout << A << std::endl;
-  
+#ifdef DEBUG
+  //std::cout << A << std::endl;
+#endif
 
-  int numLevels = 3;
+  int numLevels = 2;
   std::vector<int> map;
   BuildNaturalToHierarchicalMap(map, nx, ny, numLevels);
   //std::cout << map << std::endl;
@@ -31,9 +32,13 @@ int main(int argc, char *argv[]) {
   Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(N);
   for (int i=0; i<N; i++)
     perm.indices()[i] = map[i];
-    
-  Eigen::MatrixXd Aperm = perm.transpose() * A * perm;
-  std::cout << std::endl << Aperm << std::endl;
+
+  // TODO: study applying permutation matrix
+  //Eigen::MatrixXd Aperm = perm.transpose() * A * perm;
+  Eigen::MatrixXd Aperm = perm * A * perm.transpose();
+#ifdef DEBUG
+  //std::cout << std::endl << Aperm << std::endl;
+#endif
 
   int maxRank = 10;
   AdmissType admiss = WEAK;
