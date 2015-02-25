@@ -8,11 +8,10 @@ CCFLAGS = -Wall $(INCLUDE)
 #HEADER  = ../include/hmap.hpp
 
 EXE = solve
-
-OBJS =  solve.o \
-	../src/hmat.o ../src/node.o \
-	../src/helper.o \
-	../src/dim2.o ../src/timer.o
+SRC = hmat.cpp node.cpp helper.cpp dim2.cpp
+# add prefix
+OBJ = $(join $(addsuffix ../src/, $(dir $(SRC))), $(notdir $(SRC:.cpp=.o)))
+OBJ += solve.o
 
 all: $(EXE)
 
@@ -23,9 +22,9 @@ debug: $(EXE)
 %.o : %.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-$(EXE) : $(OBJS)
-	$(CC) $(CCFLAGS) $(OBJS) -o $@
+$(EXE) : $(OBJ)
+	$(CC) $(CCFLAGS) $(OBJ) -o $@
 
 clean :
-	rm $(EXE) $(OBJS) *~ ../src/*~ ../include/*~
+	rm $(EXE) $(OBJ) *~ ../src/*~ ../include/*~
 
