@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "hmat.hpp"
+#include "timer.hpp"
 
 void Laplacian(Eigen::MatrixXd& A, int nx, int ny);
 
@@ -16,14 +17,14 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
 int main(int argc, char *argv[]) {
 
 
-  int nx = 8, ny = 8;
+  int nx = 32, ny = 32;
   Eigen::MatrixXd A;
   Laplacian(A, nx, ny);
 #ifdef DEBUG
   //std::cout << A << std::endl;
 #endif
 
-  int numLevels = 2;
+  int numLevels = 4;
   std::vector<int> map;
   BuildNaturalToHierarchicalMap(map, nx, ny, numLevels);
   //std::cout << map << std::endl;
@@ -50,9 +51,18 @@ int main(int argc, char *argv[]) {
   Eigen::MatrixXd rhsPerm1 = rhs * perm;
   Eigen::MatrixXd rhsPerm2 = perm * rhs;
 
+  double t0 = timer();
   Eigen::MatrixXd x1 = Ah.solve( rhs );
-  printf("Residule: %e\n", (Aperm*x1 - rhs).norm() );
-  
+  double t1 = timer();
+  printf("Fast solver residule: %e\n time: %f s\n\n",
+	 (Aperm*x1 - rhs).norm(), t1-t0 );
+
+  double t2 = timer();
+  Eigen::MatrixXd x2 = A.lu().solve( rhs );
+  double t3 = timer();
+  printf("Direct solver residule: %e\n time: %f s\n",
+	 (A*x2 - rhs).norm(), t3-t2 );
+
   /*
     TODO: test the accuracy for the original matrix A
   Eigen::MatrixXd x1 = Ah.solve( rhsPerm1 );
