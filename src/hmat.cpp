@@ -1,5 +1,4 @@
 #include "hmat.hpp"
-#include <Eigen/LU>
 
 #include <iostream>
 

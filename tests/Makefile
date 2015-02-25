@@ -1,6 +1,7 @@
 CC = g++
 
-EIGEN   = /usr/include/eigen3/
+#EIGEN   = /usr/include/eigen3/
+EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
 INCLUDE = -I ../include -I $(EIGEN)
 CCFLAGS = -Wall $(INCLUDE)
 
@@ -10,7 +11,8 @@ EXE = solve
 
 OBJS =  solve.o \
 	../src/hmat.o ../src/node.o \
-	../src/helper.o ../src/dim2.o
+	../src/helper.o \
+	../src/dim2.o ../src/timer.o
 
 all: $(EXE)
 

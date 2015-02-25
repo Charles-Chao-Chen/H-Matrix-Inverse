@@ -48,7 +48,7 @@ void ComputeLowRank_SVD
   
 #ifdef DEBUG
   std::cout << "  Form the low rank block ..." << std::endl;
-  std::cout << A << std::endl;
+  //std::cout << A << std::endl;
 #endif
 
   Eigen::JacobiSVD<EMatrix> svd(A, Eigen::ComputeThinU

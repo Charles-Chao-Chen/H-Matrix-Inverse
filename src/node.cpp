@@ -24,7 +24,9 @@ Node::Node
   // low rank block
   if ( Admissible( source_, target_, admissType ) ) {
     blockType = LOWRANK;
-    ComputeLowRank( UMat, VMat, A );
+    //ComputeLowRank( UMat, VMat, A );
+    //TODO: make eps a member variable in HMat class
+    ComputeLowRank_SVD( UMat, VMat, A, 1e-3 );
   }
 
   // dense block
