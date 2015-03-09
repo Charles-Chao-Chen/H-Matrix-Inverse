@@ -5,6 +5,29 @@
 #include "hmat.hpp"
 #include "timer.hpp"
 
+class ZorderPermute {
+
+public:
+  ZorderPermute();
+  ZorderPermute(int nx, int ny, int level);
+  
+  // apply the permutation matrix
+  Eigen::MatrixXd convert(const Eigen::MatrixXd&);
+  
+private:  
+  void BuildMapOnQuadrant
+  (int* map, int& index, int curLevel, int thisXSize, int thisYSize);
+  
+  // private variable
+  int nx_;
+  int ny_;
+  int numLevel_;
+  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> P;
+};
+
+
+// form the sparse matrix for the laplacian operation using
+//  five point finite difference scheme
 void Laplacian(Eigen::MatrixXd& A, int nx, int ny);
 
 void BuildNaturalToHierarchicalMap
@@ -12,64 +35,47 @@ void BuildNaturalToHierarchicalMap
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
-
   
 int main(int argc, char *argv[]) {
 
-
-  int nx = 32, ny = 32;
+  int nx = 8, ny = 8;
   Eigen::MatrixXd A;
   Laplacian(A, nx, ny);
-#ifdef DEBUG
-  //std::cout << A << std::endl;
-#endif
 
-  int numLevels = 4;
-  std::vector<int> map;
-  BuildNaturalToHierarchicalMap(map, nx, ny, numLevels);
-  //std::cout << map << std::endl;
-
-  int N = nx*ny;
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm(N);
-  for (int i=0; i<N; i++)
-    perm.indices()[i] = map[i];
-
-  // TODO: study applying permutation matrix
-  //Eigen::MatrixXd Aperm = perm.transpose() * A * perm;
-  Eigen::MatrixXd Aperm = perm * A * perm.transpose();
-#ifdef DEBUG
-  //std::cout << std::endl << Aperm << std::endl;
-#endif
-
+  int numLevels = 4;    
+  ZorderPermute perm(nx, ny, numLevels);
+  Eigen::MatrixXd Aperm = perm.convert(A);
+  
   int maxRank = 10;
   AdmissType admiss = WEAK;
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
 
   // random right hand side
   int nRhs = 2;
-  Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( N, nRhs );
-  Eigen::MatrixXd rhsPerm1 = rhs * perm;
-  Eigen::MatrixXd rhsPerm2 = perm * rhs;
+  Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
 
-  double t0 = timer();
+  Timer t; t.start();
   Eigen::MatrixXd x1 = Ah.solve( rhs );
-  double t1 = timer();
-  printf("Fast solver residule: %e\n time: %f s\n\n",
-	 (Aperm*x1 - rhs).norm(), t1-t0 );
-
-  double t2 = timer();
+  t.stop(); t.get_elapsed_time();
+  std::cout << "Fast solver residule : "
+	    << (Aperm*x1 - rhs).norm()
+	    << std::endl;
+  
+  t.start();
   Eigen::MatrixXd x2 = A.lu().solve( rhs );
-  double t3 = timer();
-  printf("Direct solver residule: %e\n time: %f s\n",
-	 (A*x2 - rhs).norm(), t3-t2 );
+  t.stop();  t.get_elapsed_time();
+  std::cout << "Direct solver residule : "
+	    << (Aperm*x1 - rhs).norm()
+	    << std::endl;
 
-  /*
-    TODO: test the accuracy for the original matrix A
+  //TODO: test the accuracy for the original matrix A
+  // A x = b
+  // (P*A*P') (P*x) = P*b
+
+  Eigen::MatrixXd rhsPerm = perm.convert(rhs);
   Eigen::MatrixXd x1 = Ah.solve( rhsPerm1 );
-  printf("Residule: %e\n", (A*x1 - rhs).norm() );
-  Eigen::MatrixXd x2 = Ah.solve( rhsPerm2 );
-  printf("Residule: %e\n", (A*x2 - rhs).norm() );
-  */
+  Eigen::MatrixXd xOrig = perm.transpose_convert(x1);
+  printf("Residule: %e\n", (A*xOrig - rhs).norm() );
     
   return 0;
 }
@@ -94,17 +100,55 @@ void Laplacian(Eigen::MatrixXd& A, int nx, int ny) {
   }
 }
 
-
-void BuildMapOnQuadrant
-( int* map, int& index, int level, int numLevels,
-  int xSize, int ySize, int thisXSize, int thisYSize )
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
 {
-    if( level == numLevels-1 )
+  for (int i=0; i<vec.size(); i++)
+    os << vec[i] << " ";
+  os << std::endl;
+  return os;
+}
+
+
+ZorderPermute::ZorderPermute()
+  : nx_(0), ny_(0), numLevel_(0) {}
+
+ZorderPermute::ZorderPermute(int nx, int ny, int level)
+  : nx_(nx), ny_(ny), numLevel_(level) {
+
+#ifdef DEBUG
+  std::cout << "Grid : " << nx_ << " x " << ny_ << std::endl;
+  std::cout << " hierarchy level : " << level << std::endl;
+#endif
+  int N = nx_*ny_;
+  int map[N];
+
+  // Fill the mapping from the 'natural' x-y-z ordering
+  int index = 0;
+  int rootLevel = 0;
+  BuildMapOnQuadrant(map, index, rootLevel, nx_, ny_);
+  assert(index == N);
+    
+  //P = Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>(N);
+  P.resize(N);
+  for (int i=0; i<N; i++)
+    P.indices()[i] = map[i];
+}
+
+Eigen::MatrixXd ZorderPermute::convert(const Eigen::MatrixXd& A) {
+  assert( P.size() != 0);
+  return P*A*P.transpose();
+}
+
+void ZorderPermute::BuildMapOnQuadrant
+(int* map, int& index, int curLevel, int thisXSize, int thisYSize)
+{
+    if( curLevel == numLevel_-1 )
     {
         // Stamp these indices into the buffer
         for( int j=0; j<thisYSize; ++j )
         {
-            int* thisRow = &map[j*xSize];
+            int* thisRow = &map[j*nx_];
             for( int i=0; i<thisXSize; ++i )
                 thisRow[i] = index++;
         }
@@ -118,43 +162,20 @@ void BuildMapOnQuadrant
 
         // Recurse on the lower-left quadrant
         BuildMapOnQuadrant
-        ( &map[0], index, level+1, numLevels,
-          xSize, ySize, leftWidth, bottomHeight );
+        ( &map[0], index, curLevel+1,
+          leftWidth, bottomHeight );
         // Recurse on the lower-right quadrant
         BuildMapOnQuadrant
-        ( &map[leftWidth], index, level+1, numLevels,
-          xSize, ySize, rightWidth, bottomHeight );
+        ( &map[leftWidth], index, curLevel+1,
+          rightWidth, bottomHeight );
         // Recurse on the upper-left quadrant
         BuildMapOnQuadrant
-        ( &map[bottomHeight*xSize], index, level+1, numLevels,
-          xSize, ySize, leftWidth, topHeight );
+        ( &map[bottomHeight*nx_], index, curLevel+1,
+          leftWidth, topHeight );
         // Recurse on the upper-right quadrant
         BuildMapOnQuadrant
-        ( &map[bottomHeight*xSize+leftWidth], index, level+1, numLevels,
-          xSize, ySize, rightWidth, topHeight );
+        ( &map[bottomHeight*nx_+leftWidth], index, curLevel+1,
+          rightWidth, topHeight );
     }
 }
 
-
-void BuildNaturalToHierarchicalMap
-( std::vector<int>& map, int xSize, int ySize, int numLevels ){
-  
-    map.resize( xSize*ySize );
-
-    // Fill the mapping from the 'natural' x-y-z ordering
-    int index = 0;
-    BuildMapOnQuadrant
-    ( &map[0], index, 0, numLevels, xSize, ySize, xSize, ySize );
-
-    assert(index == xSize*ySize);
-}
-
-
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-{
-  for (int i=0; i<vec.size(); i++)
-    os << vec[i] << " ";
-  os << std::endl;
-  return os;
-}
