@@ -2,15 +2,20 @@
 
 #include <iostream>
 
-HMat::HMat() {}
+HMat::HMat()
+  : maxRank_(0),       numLevels_(0),
+    admissType_(WEAK), treeRoot_(NULL)
+{}
 
 HMat::HMat
 (const EMatrix& A, int maxRank, int numLevels, AdmissType admiss,
  int xSize, int ySize)
-  : maxRank_(maxRank), numLevels_(numLevels), admissType_(admiss)
+  : maxRank_(maxRank),   numLevels_(numLevels),
+    admissType_(admiss), treeRoot_(NULL)
 {
 
 #ifdef DEBUG
+  assert( xSize*ySize == A.size() );
   std::cout << "Begin building h-tree ..." << std::endl;
   std::cout << "  max rank : " << maxRank_ << std::endl;
   std::cout << "  # of levels : " << numLevels_ << std::endl;
@@ -20,10 +25,10 @@ HMat::HMat
 #endif
 
   int  rootLevel  =  0;          // the root starts from level 0
-  Dim2 rootSource(0,0);          // only one source at root level
-  Dim2 rootTarget(0,0);          // only one target at root level
-  Dim2 rootSrcSize(xSize, ySize);
-  Dim2 rootTgtSize(xSize, ySize);
+  Point2 rootSource(0,0);          // only one source at root level
+  Point2 rootTarget(0,0);          // only one target at root level
+  Rect2 rootSrcSize(xSize, ySize);
+  Rect2 rootTgtSize(xSize, ySize);
 
   treeRoot_ = new Node(A,
 		       rootSource,  rootTarget,
@@ -81,7 +86,7 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
   // solve the two diagonal 2x2 blocks
   const EMatrix x0 = solve_2x2( rhsSub0, node, 0 );
   const EMatrix x1 = solve_2x2( rhsSub1, node, 2 );
-  return RecoverSolution( x0, x1, rhs.cols(), V0, V1 );
+  return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
 // standard HODLR solver
@@ -118,10 +123,10 @@ EMatrix HMat::solve_2x2
   // recursively solve
   const EMatrix x0 = solve( rhsSub0, node->child( first,  first  ) );
   const EMatrix x1 = solve( rhsSub1, node->child( second, second ) );
-  return RecoverSolution( x0, x1, rhs.cols(), V0, V1 );
+  return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
-EMatrix HMat::RecoverSolution
+EMatrix HMat::AssembleSolution
 (const EMatrix& x0, const EMatrix& x1, int rhs_cols,
  const EMatrix& V0, const EMatrix& V1) {
 

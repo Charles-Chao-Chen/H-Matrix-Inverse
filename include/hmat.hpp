@@ -3,14 +3,23 @@
 
 #include "node.hpp"
 
-
 class HMat {
   
 public:
   HMat();
+  
+  // This constructor takes a matrix with z-ordering
+  //  and construct the hierarchical tree structure.
+  //  Usage:
+  //   HMat (A, maxRank, numLevels, admiss, xSize, ySize)
+  //  where A is the matrix and xSize and ySize are the grid sizes
   HMat(const EMatrix&, int, int, AdmissType, int, int);
+
+  // destroy the hierarchical tree
   ~HMat();
 
+  // solve the linear system with the right hand side as the input
+  //  it also accepts a single right hand size as an eigen vector
   EMatrix solve(const EMatrix&);
   
 private:
@@ -22,11 +31,11 @@ private:
   EMatrix solve_2x2
   (const EMatrix&, const Node*, int);
 
-  EMatrix RecoverSolution
+  EMatrix AssembleSolution
   (const EMatrix& x0, const EMatrix& x1, int,
    const EMatrix& V0, const EMatrix& V1);
 
-  // helper for deconstructor
+  // helper function for the destructor
   void DestroyNode(Node* node);
   
   // global information of the tree
@@ -34,7 +43,7 @@ private:
   int numLevels_;
   AdmissType admissType_;
 
-  // root of the tree
+  // root of the hierarchical tree
   Node* treeRoot_;
 };
 

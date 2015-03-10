@@ -1,6 +1,7 @@
 #ifndef DIM2_H
 #define DIM2_H
 
+/*
 template <unsigned DIM>
 class Point {
 public :
@@ -8,6 +9,7 @@ public :
 private :
   x[DIM];
 };
+*/
 
 // for grid pints in 2d
 //  note the coordinates are both integers
@@ -56,6 +58,8 @@ Dim2 Abs(const Dim2&);
 // return the max coordinate
 double Max(const Dim2&);
 
-
+// use different names for points and rectangles
+typedef Dim2 Point2;
+typedef Dim2 Rect2;
 
 #endif // DIM2_H

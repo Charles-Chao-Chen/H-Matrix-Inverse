@@ -8,7 +8,7 @@
 
 class Node {
 
-public:
+public :
   
   enum BlockType {
     DENSE,
@@ -16,23 +16,21 @@ public:
     HIERARCHY,
   };
 
-  // empty constructor for debugging purpose
+  // empty constructor
   Node();
   
   Node
   (const EMatrix& A,
-   const Dim2& source,  const Dim2& target,
-   const Dim2& srcSize, const Dim2& tgtSize,
+   const Point2& source,  const Point2& target,
+   const Rect2& srcSize, const Rect2& tgtSize,
    AdmissType admissType, int curLevel, int numLevels);
   
 public:
-  bool  is_leaf() const;
+  
+  bool is_leaf() const;
   
   Node* child(int, int); // get child pointer
-
   const Node* child(int, int) const;
-
-  BlockType get_block_type() const;
 
   // for hierarchical nodes only
   const EMatrix  get_topU() const;
@@ -49,12 +47,12 @@ public:
   
 private:
   int  level_;
-  Dim2 source_;  // index  of source cell
-  Dim2 target_;  // index  of target cell
-  Dim2 srcSize_; // size of the source cell
-  Dim2 tgtSize_; // size of the target cell
+  Point2 source_; // index  of source cell
+  Point2 target_; // index  of target cell
+  Rect2 srcSize_; // size of the source cell
+  Rect2 tgtSize_; // size of the target cell
 
-  Node* children[4][4]; // 4=2^2 i.e. sub-divide in 2d
+  Node* children[4][4]; // 4=2^2 i.e. sub-divide each dimension in 2d
 
   // Matrix data :
   //  UMat and VMat for low rank factorization

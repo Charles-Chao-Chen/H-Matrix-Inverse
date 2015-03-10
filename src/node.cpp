@@ -9,8 +9,8 @@ Node::Node() {}
 
 Node::Node
 (const EMatrix& A,
- const Dim2& source,  const Dim2& target,
- const Dim2& srcSize, const Dim2& tgtSize,
+ const Point2& source,  const Point2& target,
+ const Rect2& srcSize, const Rect2& tgtSize,
  AdmissType admissType, int curLevel, int numLevels)
 
   : source_ (source),  target_ (target),
@@ -59,23 +59,23 @@ Node::Node
     // (which happens to be the same as the natural order)
 
     // size of the children block along every dimension
-    Dim2 xTgtSize = tgtSize.x_bisection();
-    Dim2 yTgtSize = tgtSize.y_bisection();
-    Dim2 xSrcSize = srcSize.x_bisection();
-    Dim2 ySrcSize = srcSize.y_bisection();
+    Rect2 xTgtSize = tgtSize.x_bisection();
+    Rect2 yTgtSize = tgtSize.y_bisection();
+    Rect2 xSrcSize = srcSize.x_bisection();
+    Rect2 ySrcSize = srcSize.y_bisection();
       
     // offset in the matrix, starting from row 0 and column 0
     for (int t=0, startRow=0; t<4; t++) {
-      Dim2 tIdx = ZorderIdx( t );
-      Dim2 tgtChild( 2*target_ + tIdx );
-      Dim2 tgtSizeChild( xTgtSize[ tIdx.x_ ], yTgtSize[ tIdx.y_ ] );
+      Point2 tIdx = ZorderIdx( t );
+      Point2 tgtChild( 2*target_ + tIdx );
+      Rect2  tgtSizeChild( xTgtSize[ tIdx.x_ ], yTgtSize[ tIdx.y_ ] );
 	
       for (int s=0, startCol=0; s<4; s++) {
-	Dim2 sIdx = ZorderIdx( s );
-	Dim2 srcChild( 2*source_ + sIdx );
-	Dim2 srcSizeChild( xSrcSize[ tIdx.x_ ], ySrcSize[ tIdx.y_ ] );
+	Point2 sIdx = ZorderIdx( s );
+	Point2 srcChild( 2*source_ + sIdx );
+	Rect2  srcSizeChild( xSrcSize[ tIdx.x_ ], ySrcSize[ tIdx.y_ ] );
 
-	int  lChild = curLevel+1;	
+	int     lChild = curLevel+1;	
 	EMatrix Achild
 	  = A.block( startRow, startCol,
 		     tgtSizeChild.area(), srcSizeChild.area() );
