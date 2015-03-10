@@ -39,11 +39,11 @@ public:
   const EMatrix  get_botV() const;
 
   // for dense nodes only
-  const EMatrix& get_dmat() const;
+  const EMatrix& dmat() const;
 
   // for low rank nodes only
-  const EMatrix& get_umat() const;
-  const EMatrix& get_vmat() const;
+  const EMatrix& umat() const;
+  const EMatrix& vmat() const;
   
 private:
   int  level_;
@@ -77,21 +77,21 @@ inline const Node* Node::child( int i, int j ) const {
   return children[i][j];
 }
 
-inline const EMatrix& Node::get_dmat() const {
+inline const EMatrix& Node::dmat() const {
 #ifdef DEBUG
   assert( this->blockType == DENSE );
 #endif
   return DMat;
 }
 
-inline const EMatrix& Node::get_umat() const {
+inline const EMatrix& Node::umat() const {
 #ifdef DEBUG
   assert( this->blockType == LOWRANK );
 #endif
   return UMat;
 }
 
-inline const EMatrix& Node::get_vmat() const {
+inline const EMatrix& Node::vmat() const {
 #ifdef DEBUG
   assert( this->blockType == LOWRANK );
 #endif

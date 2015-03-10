@@ -61,7 +61,7 @@ EMatrix HMat::solve( const EMatrix& rhs ) {
 
 EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
   if (node->is_leaf()) {
-    const EMatrix& denseBlock = node->get_dmat();
+    const EMatrix& denseBlock = node->dmat();
     return denseBlock.lu().solve( rhs );
   }
   
@@ -105,10 +105,10 @@ EMatrix HMat::solve_2x2
   // -----------------------
 
   int second = first + 1;
-  const EMatrix& U0 = node->child( first, second )->get_umat();
-  const EMatrix& U1 = node->child( second, first )->get_umat();
-  const EMatrix& V0 = node->child( second, first )->get_vmat();
-  const EMatrix& V1 = node->child( first, second )->get_vmat();
+  const EMatrix& U0 = node->child( first, second )->umat();
+  const EMatrix& U1 = node->child( second, first )->umat();
+  const EMatrix& V0 = node->child( second, first )->vmat();
+  const EMatrix& V1 = node->child( first, second )->vmat();
 
 #ifdef DEBUG
   assert( U0.rows()+U1.rows() == rhs.rows() );
