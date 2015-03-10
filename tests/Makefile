@@ -19,6 +19,10 @@ all: $(EXE)
 debug: CCFLAGS += -DDEBUG -g
 debug: $(EXE)
 
+# profiling mode
+profile: CCFLAGS += -pg
+profile: $(EXE)
+
 %.o : %.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@
 
