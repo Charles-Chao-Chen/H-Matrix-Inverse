@@ -6,14 +6,26 @@
 #include "timer.hpp"
 
 class ZorderPermute {
-
+  typedef Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> PMatrix;
 public:
+  // three constructors
+  //  (1) defalut constructor
+  //  (2) takes the grid information and compute the permutation matrix
+  //  (3) takes the permutation matrix
   ZorderPermute();
   ZorderPermute(int nx, int ny, int level);
+  explicit ZorderPermute(const PMatrix&);
   
-  // apply the permutation matrix
-  Eigen::MatrixXd convert(const Eigen::MatrixXd&);
+  // the inverse (transpose) permutation
+  ZorderPermute inverse();
+  ZorderPermute transpose();
   
+  // operator overloading functions
+  //  so the object can be used like a permutation matrix
+  friend Eigen::MatrixXd operator*(const ZorderPermute&,
+				   const Eigen::MatrixXd&);
+  friend Eigen::MatrixXd operator*(const Eigen::MatrixXd&,
+				   const ZorderPermute&);
 private:  
   void BuildMapOnQuadrant
   (int* map, int& index, int curLevel, int thisXSize, int thisYSize);
@@ -22,17 +34,15 @@ private:
   int nx_;
   int ny_;
   int numLevel_;
-  Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> P;
+  PMatrix P;
 };
-
 
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
 void Laplacian(Eigen::MatrixXd& A, int nx, int ny);
 
-void BuildNaturalToHierarchicalMap
-( std::vector<int>& map, int xSize, int ySize, int numLevels );
 
+// output vector object (for debugging purpose)
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
   
@@ -44,7 +54,7 @@ int main(int argc, char *argv[]) {
 
   int numLevels = 4;    
   ZorderPermute perm(nx, ny, numLevels);
-  Eigen::MatrixXd Aperm = perm.convert(A);
+  Eigen::MatrixXd Aperm = perm*A*perm.inverse();
   
   int maxRank = 10;
   AdmissType admiss = WEAK;
@@ -54,27 +64,28 @@ int main(int argc, char *argv[]) {
   int nRhs = 2;
   Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
 
+  // get accuracy and time for the h-solver
   Timer t; t.start();
   Eigen::MatrixXd x1 = Ah.solve( rhs );
   t.stop(); t.get_elapsed_time();
   std::cout << "Fast solver residule : "
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
-  
+
+  // get accuracy and time for the standard LU method
   t.start();
   Eigen::MatrixXd x2 = A.lu().solve( rhs );
   t.stop();  t.get_elapsed_time();
   std::cout << "Direct solver residule : "
-	    << (Aperm*x1 - rhs).norm()
+	    << (A*x2 - rhs).norm()
 	    << std::endl;
 
-  //TODO: test the accuracy for the original matrix A
-  // A x = b
-  // (P*A*P') (P*x) = P*b
-
-  Eigen::MatrixXd rhsPerm = perm.convert(rhs);
-  Eigen::MatrixXd x1 = Ah.solve( rhsPerm1 );
-  Eigen::MatrixXd xOrig = perm.transpose_convert(x1);
+  // test the accuracy for the original problem
+  //  i.e. A x = b
+  //      (P*A*P') (P*x) = P*b
+  Eigen::MatrixXd rhsPerm = perm*rhs;
+  Eigen::MatrixXd x3 = Ah.solve( rhsPerm );
+  Eigen::MatrixXd xOrig = perm.inverse()*x3;
   printf("Residule: %e\n", (A*xOrig - rhs).norm() );
     
   return 0;
@@ -109,7 +120,6 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
   return os;
 }
 
-
 ZorderPermute::ZorderPermute()
   : nx_(0), ny_(0), numLevel_(0) {}
 
@@ -135,9 +145,9 @@ ZorderPermute::ZorderPermute(int nx, int ny, int level)
     P.indices()[i] = map[i];
 }
 
-Eigen::MatrixXd ZorderPermute::convert(const Eigen::MatrixXd& A) {
-  assert( P.size() != 0);
-  return P*A*P.transpose();
+ZorderPermute::ZorderPermute(const PMatrix& Pinv)
+  : nx_(0), ny_(0), numLevel_(0) {
+  P = Pinv;
 }
 
 void ZorderPermute::BuildMapOnQuadrant
@@ -177,5 +187,25 @@ void ZorderPermute::BuildMapOnQuadrant
         ( &map[bottomHeight*nx_+leftWidth], index, curLevel+1,
           rightWidth, topHeight );
     }
+}
+
+ZorderPermute ZorderPermute::inverse() {
+  return ZorderPermute( P.inverse() ); 
+}
+
+ZorderPermute ZorderPermute::transpose() {
+  return inverse();
+}
+
+Eigen::MatrixXd operator*(const ZorderPermute& perm,
+			  const Eigen::MatrixXd& A) {
+  assert( perm.P.size() != 0);
+  return (perm.P)*A;
+}
+
+Eigen::MatrixXd operator*(const Eigen::MatrixXd& A,
+			  const ZorderPermute& perm) {
+  assert( perm.P.size() != 0);
+  return A*(perm.P);
 }
 
