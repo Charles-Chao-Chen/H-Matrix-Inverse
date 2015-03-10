@@ -39,8 +39,7 @@ private:
 
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
-void Laplacian(Eigen::MatrixXd& A, int nx, int ny);
-
+Eigen::MatrixXd Laplacian(int nx, int ny);
 
 // output vector object (for debugging purpose)
 template<typename T>
@@ -48,21 +47,25 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
   
 int main(int argc, char *argv[]) {
 
-  int nx = 8, ny = 8;
+  int nx = 32, ny = 32;
   Eigen::MatrixXd A;
-  Laplacian(A, nx, ny);
+  //Laplacian(A, nx, ny);
+  A = Laplacian(nx, ny);
 
-  int numLevels = 4;    
+  int numLevels = 3;
   ZorderPermute perm(nx, ny, numLevels);
   Eigen::MatrixXd Aperm = perm*A*perm.inverse();
   
-  int maxRank = 10;
+  int maxRank = 1;
   AdmissType admiss = WEAK;
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
 
   // random right hand side
   int nRhs = 2;
   Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
+
+  //Eigen::MatrixXd x1 = Ah.solve( rhs );
+
 
   // get accuracy and time for the h-solver
   Timer t; t.start();
@@ -72,6 +75,7 @@ int main(int argc, char *argv[]) {
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
 
+  /*
   // get accuracy and time for the standard LU method
   t.start();
   Eigen::MatrixXd x2 = A.lu().solve( rhs );
@@ -87,13 +91,14 @@ int main(int argc, char *argv[]) {
   Eigen::MatrixXd x3 = Ah.solve( rhsPerm );
   Eigen::MatrixXd xOrig = perm.inverse()*x3;
   printf("Residule: %e\n", (A*xOrig - rhs).norm() );
+  */
     
   return 0;
 }
 
-void Laplacian(Eigen::MatrixXd& A, int nx, int ny) {
+Eigen::MatrixXd Laplacian(int nx, int ny) {
   int N = nx*ny;
-  A = Eigen::MatrixXd::Zero( N, N );
+  Eigen::MatrixXd A = Eigen::MatrixXd::Zero( N, N );
 
   for (int x=0; x<nx; x++) {
     for (int y=0; y<ny; y++) {
@@ -109,6 +114,7 @@ void Laplacian(Eigen::MatrixXd& A, int nx, int ny) {
 	A(s,s+nx) = -1;
     }
   }
+  return A;
 }
 
 template<typename T>
