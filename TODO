@@ -1,1 +1,6 @@
-- implmented maxRank as the upper bound for off-diagonal blocks
+- implement maxRank as the upper bound for off-diagonal blocks
+
+- implement templated Point class and Rect class for 1D, 2D and 3D
+
+- extend the solver to 1D (easy) and 3D (recursivly call 1D solve
+   for HIERARCHY node)

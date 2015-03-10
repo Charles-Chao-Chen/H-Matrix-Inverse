@@ -1,6 +1,14 @@
 #ifndef DIM2_H
 #define DIM2_H
 
+template <unsigned DIM>
+class Point {
+public :
+  Point();
+private :
+  x[DIM];
+};
+
 // for grid pints in 2d
 //  note the coordinates are both integers
 struct Dim2 {
