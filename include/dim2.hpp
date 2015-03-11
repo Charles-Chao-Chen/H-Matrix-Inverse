@@ -1,65 +1,60 @@
 #ifndef DIM2_H
 #define DIM2_H
 
-/*
-template <unsigned DIM>
-class Point {
-public :
-  Point();
-private :
-  x[DIM];
-};
-*/
+// grid points in 2d with integer coordinates
+class Point2 {
+public:
+  Point2();
+  Point2(int,int);
 
-// for grid pints in 2d
-//  note the coordinates are both integers
-struct Dim2 {
+  // two static methods :
+  //  (1) the point with absolution coordinates
+  //  (2) the larger coordinates
+  static Point2 abs(const Point2&);
+  static int max(const Point2&);
 
-  // constructor
-  Dim2();
-  Dim2(int,int);
-
-  // member functions
-
-  int area() const;
-
-  Dim2 x_bisection() const;
-
-  Dim2 y_bisection() const;
-  
-  /* --- operator overloading --- */
-
-  // Dim2 object can be used as int[2]
-  //  where [0] and [1] correspond to x_ and y_
-  int  operator[] (const int);
-
-  // member variables
+public:
   int x_;
   int y_;
 };
 
 /* --- operator overloading --- */
 
-Dim2 operator- (const Dim2& a, const Dim2& b);
+Point2 operator- (const Point2& a, const Point2& b);
 
-Dim2 operator+ (const Dim2& a, const Dim2& b);
+Point2 operator+ (const Point2& a, const Point2& b);
 
-Dim2 operator* (const int scale, const Dim2& a);
+Point2 operator* (const int scale, const Point2& a);
 
-Dim2 operator/ ( const Dim2& a, const int scale);
+Point2 operator/ ( const Point2& a, const int scale);
 
-bool operator== (const Dim2& a, const Dim2& b);
+bool operator== (const Point2& a, const Point2& b);
 
-bool operator!= (const Dim2& a, const Dim2& b);
+bool operator!= (const Point2& a, const Point2& b);
 
+// rectangle in 2 dimensions with width and height in integers
+class Rect2 {
+public:
+  // constructor
+  Rect2();
+  Rect2(int,int);
 
-Dim2 Abs(const Dim2&);
+  // member functions
 
-// return the max coordinate
-double Max(const Dim2&);
+  // return the area of the rectangle
+  int area() const;
 
-// use different names for points and rectangles
-typedef Dim2 Point2;
-typedef Dim2 Rect2;
+  // the first and second half of the width
+  Rect2 x_bisection() const;
+
+  // the first and second half of the height
+  Rect2 y_bisection() const;
+  
+  /* --- operator overloading --- */
+  int operator[] (const int);
+  
+private:
+  int x[2];
+};
 
 #endif // DIM2_H

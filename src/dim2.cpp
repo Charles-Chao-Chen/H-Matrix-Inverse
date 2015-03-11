@@ -4,72 +4,69 @@
 #include <assert.h>
 #include <stdlib.h>  // for abs
 
+Point2::Point2()
+  : x_(0), y_(0) {}
 
-Dim2::Dim2() {}
-
-Dim2::Dim2(int x, int y)
+Point2::Point2(int x, int y)
   : x_(x), y_(y) {}
 
-int Dim2::area() const {
-  return x_*y_;
+/*static*/ Point2 Point2::abs(const Point2& a) {
+  return Point2( std::abs(a.x_), std::abs(a.y_) );
 }
 
-Dim2 Dim2::x_bisection() const {
-  int firstHalf  = x_ / 2;
-  int secondHalf = x_ - firstHalf;
-  return Dim2( firstHalf, secondHalf );
+/*static*/ int Point2::max(const Point2& a) {
+  return std::max(a.x_, a.y_);
 }
 
-Dim2 Dim2::y_bisection() const {
-  int firstHalf  = y_ / 2;
-  int secondHalf = y_ - firstHalf;
-  return Dim2( firstHalf, secondHalf );
+Point2 operator- (const Point2& a, const Point2& b) {
+  return Point2(a.x_-b.x_, a.y_-b.y_);
 }
 
-int Dim2::operator[] (const int idx) {
-  switch( idx ) {
-  case 0:
-    return x_;
-    break;
-  case 1:
-    return y_;
-    break;
-  default:
-    assert(false);
-    break;
-  }
+Point2 operator+ (const Point2& a, const Point2& b) {
+  return Point2(a.x_+b.x_, a.y_+b.y_);
 }
 
-Dim2 operator- (const Dim2& a, const Dim2& b) {
-  return (Dim2){a.x_-b.x_, a.y_-b.y_};
+Point2 operator* (const int scale, const Point2& a) {
+  return Point2(scale*a.x_, scale*a.y_);
 }
 
-Dim2 operator+ (const Dim2& a, const Dim2& b) {
-  return (Dim2){a.x_+b.x_, a.y_+b.y_};
+Point2 operator/ (const Point2& a, const int scale) {
+  return Point2(a.x_/scale, a.y_/scale);
 }
 
-Dim2 operator* (const int scale, const Dim2& a) {
-  return (Dim2){scale*a.x_, scale*a.y_};
-}
-
-Dim2 operator/ (const Dim2& a, const int scale) {
-  return (Dim2){a.x_/scale, a.y_/scale};
-}
-
-bool operator== (const Dim2& a, const Dim2& b) {
+bool operator== (const Point2& a, const Point2& b) {
   return (a.x_ == b.x_) && (a.y_ == b.y_);
 }
 
-bool operator!= (const Dim2& a, const Dim2& b) {
+bool operator!= (const Point2& a, const Point2& b) {
   return ! (a==b);
 }
 
-Dim2 Abs(const Dim2& a) {
-  return (Dim2){abs(a.x_), abs(a.y_)};
+
+Rect2::Rect2() { x[0]=x[1]=0; }
+
+Rect2::Rect2(int a, int b) { x[0]=a, x[1]=b;}
+
+int Rect2::area() const {
+  return x[0]*x[1];
 }
 
+Rect2 Rect2::x_bisection() const {
+  int firstHalf  = x[0] / 2;
+  int secondHalf = x[0] - firstHalf;
+  return Rect2( firstHalf, secondHalf );
+}
 
-double Max(const Dim2& a) {
-  return std::max(a.x_, a.y_);
+Rect2 Rect2::y_bisection() const {
+  int firstHalf  = x[1] / 2;
+  int secondHalf = x[1] - firstHalf;
+  return Rect2( firstHalf, secondHalf );
+}
+
+int Rect2::operator[] (const int idx) {
+#ifdef DEBUG
+  assert( idx==0 || idx==1 );
+#endif
+  return x[idx];
 }
 
