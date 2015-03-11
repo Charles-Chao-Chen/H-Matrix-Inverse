@@ -21,9 +21,9 @@ public :
   
   Node
   (const EMatrix& A,
-   const Point2& source,  const Point2& target,
+   const Point2& source, const Point2& target,
    const Rect2& srcSize, const Rect2& tgtSize,
-   AdmissType admissType, int curLevel, int numLevels);
+   const AdmissType admissType, int curLevel, int numLevels);
   
 public:
   
@@ -33,10 +33,10 @@ public:
   const Node* child(int, int) const;
 
   // for hierarchical nodes only
-  const EMatrix  get_topU() const;
-  const EMatrix  get_botU() const;
-  const EMatrix  get_topV() const;
-  const EMatrix  get_botV() const;
+  EMatrix get_topU() const;
+  EMatrix get_botU() const;
+  EMatrix get_topV() const;
+  EMatrix get_botV() const;
 
   // for dense nodes only
   const EMatrix& dmat() const;

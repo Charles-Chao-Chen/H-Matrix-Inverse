@@ -9,9 +9,9 @@ Node::Node() {}
 
 Node::Node
 (const EMatrix& A,
- const Point2& source,  const Point2& target,
+ const Point2& source, const Point2& target,
  const Rect2& srcSize, const Rect2& tgtSize,
- AdmissType admissType, int curLevel, int numLevels)
+ const AdmissType admissType, int curLevel, int numLevels)
 
   : source_ (source),  target_ (target),
     srcSize_(srcSize), tgtSize_(tgtSize)
@@ -24,7 +24,7 @@ Node::Node
   // low rank block
   if ( Admissible( source_, target_, admissType ) ) {
     blockType = LOWRANK;
-    //ComputeLowRank( UMat, VMat, A );
+
     //TODO: make eps a member variable in HMat class
     ComputeLowRank_SVD( UMat, VMat, A, 1e-3 );
   }
@@ -92,7 +92,7 @@ Node::Node
   }
 }
 
-const EMatrix Node::get_topU() const {
+EMatrix Node::get_topU() const {
 #ifdef DEBUG
   assert( this->blockType == HIERARCHY );
 #endif
@@ -103,7 +103,7 @@ const EMatrix Node::get_topU() const {
   return FormUfrom2x2( U0, U1, U2, U3 );
 }
 
-const EMatrix Node::get_botU() const {
+EMatrix Node::get_botU() const {
 #ifdef DEBUG
   assert( this->blockType == HIERARCHY );
 #endif
@@ -114,7 +114,7 @@ const EMatrix Node::get_botU() const {
   return FormUfrom2x2( U0, U1, U2, U3 );
 }
 
-const EMatrix Node::get_topV() const {
+EMatrix Node::get_topV() const {
 #ifdef DEBUG
   assert( this->blockType == HIERARCHY );
 #endif
@@ -125,7 +125,7 @@ const EMatrix Node::get_topV() const {
   return FormVfrom2x2( V0, V1, V2, V3 );
 }
 
-const EMatrix Node::get_botV() const {
+EMatrix Node::get_botV() const {
 #ifdef DEBUG
   assert( this->blockType == HIERARCHY );
 #endif
