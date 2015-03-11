@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+// the enum type and NewRHS() function aim at forming the
+//  right hand side for the sub-problem with
+//  part of the original right hand side and the U matrix
 enum SubProblem {
   TOP,
   BOTTOM,
@@ -10,6 +13,8 @@ enum SubProblem {
 template <SubProblem type>
 static EMatrix NewRHS(const EMatrix& oldRHS, const EMatrix& U);
 
+// assembles the solution for the original problem from the
+//  solutions of two sub-problems
 static EMatrix AssembleSolution
 (const EMatrix& x0, const EMatrix& x1, int,
  const EMatrix& V0, const EMatrix& V1);
@@ -96,7 +101,7 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
   // solve the two diagonal 2x2 blocks
   EMatrix x0 = solve_2x2( rhsSub0, node, 0 );
   EMatrix x1 = solve_2x2( rhsSub1, node, 2 );
-  return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
+  return  AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
 // standard HODLR solver for the following matrix structure
@@ -134,7 +139,7 @@ EMatrix HMat::solve_2x2
   return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
-/*static*/ EMatrix AssembleSolution
+/*static*/ EMatrix  AssembleSolution
 (const EMatrix& x0, const EMatrix& x1, int rhs_cols,
  const EMatrix& V0, const EMatrix& V1) {
 
@@ -155,15 +160,20 @@ EMatrix HMat::solve_2x2
   S.topRightCorner(   rank0, rank1 ) = V1 * u1;
   S.bottomLeftCorner( rank1, rank0 ) = V0 * u0;
 
+  // Srhs = [ V1*d1 ;
+  //          V0*d0 ]
   EMatrix Srhs( r, rhs_cols );
-  Srhs.topRows(    rank0 ) = V1*d1;
-  Srhs.bottomRows( rank1 ) = V0*d0;
+  Srhs << V1*d1, V0*d0;
 
-  const EMatrix eta = S.lu().solve( Srhs );
+  // TODO: optimize this solve
+  EMatrix eta = S.lu().solve( Srhs );
+
+  // result = [ d0-u0*eta0 ;
+  //            d1-u1*eta1 ]
   EMatrix result( x0.rows()+x1.rows(), rhs_cols );
-  result.topRows(    d0.rows() ) = d0 - u0*eta.topRows(    rank0 );
-  result.bottomRows( d1.rows() ) = d1 - u1*eta.bottomRows( rank1 );
-
+  result << d0 - u0*eta.topRows(    rank0 ),
+            d1 - u1*eta.bottomRows( rank1 );
+    
   return result;
 }
 
