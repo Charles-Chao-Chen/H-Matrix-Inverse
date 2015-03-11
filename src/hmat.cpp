@@ -2,6 +2,18 @@
 
 #include <iostream>
 
+enum SubProblem {
+  TOP,
+  BOTTOM,
+};
+
+template <SubProblem type>
+static EMatrix NewRHS(const EMatrix& oldRHS, const EMatrix& U);
+
+static EMatrix AssembleSolution
+(const EMatrix& x0, const EMatrix& x1, int,
+ const EMatrix& V0, const EMatrix& V1);
+
 HMat::HMat()
   : maxRank_(0),       numLevels_(0),
     admissType_(WEAK), treeRoot_(NULL)
@@ -15,7 +27,6 @@ HMat::HMat
 {
 
 #ifdef DEBUG
-  assert( xSize*ySize == A.size() );
   std::cout << "Begin building h-tree ..." << std::endl;
   std::cout << "  max rank : " << maxRank_ << std::endl;
   std::cout << "  # of levels : " << numLevels_ << std::endl;
@@ -67,7 +78,7 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
   
   // solve two sub-problems,
   //  which correspond to the first and the last 2x2 matrix blocks
-
+  // Note: the following four matrices seems to be redunant copics
   const EMatrix U0 = node->get_topU();
   const EMatrix U1 = node->get_botU();
   const EMatrix V0 = node->get_botV();
@@ -76,33 +87,31 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
 #ifdef DEBUG
   assert( U0.rows()+U1.rows() == rhs.rows() );
 #endif
-  EMatrix rhsSub0( U0.rows(), rhs.cols() + U0.cols() );
-  EMatrix rhsSub1( U1.rows(), rhs.cols() + U1.cols() );
-  rhsSub0.leftCols( rhs.cols() ) = rhs.topRows(    U0.rows() );
-  rhsSub1.leftCols( rhs.cols() ) = rhs.bottomRows( U1.rows() );
-  rhsSub0.rightCols( U0.cols() ) = U0;
-  rhsSub1.rightCols( U1.cols() ) = U1;
-  
+  // new right hand side for two sub-problems :
+  //   rhsSub0 = [ rhsTop, U0 ]
+  //   rhsSub1 = [ rhsBot, U1 ]
+  EMatrix rhsSub0 = NewRHS<TOP>   (rhs, U0);
+  EMatrix rhsSub1 = NewRHS<BOTTOM>(rhs, U1);
+    
   // solve the two diagonal 2x2 blocks
-  const EMatrix x0 = solve_2x2( rhsSub0, node, 0 );
-  const EMatrix x1 = solve_2x2( rhsSub1, node, 2 );
+  EMatrix x0 = solve_2x2( rhsSub0, node, 0 );
+  EMatrix x1 = solve_2x2( rhsSub1, node, 2 );
   return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
-// standard HODLR solver
+// standard HODLR solver for the following matrix structure
+//  -----------------------
+//  |          |          |
+//  |  dense   |  lowrank |
+//  |          |          |
+//  -----------------------
+//  |          |          |
+//  | lowrank  |   dense  |
+//  |          |          |
+//  -----------------------
 //  refering to : http://arxiv.org/abs/1403.5337
 EMatrix HMat::solve_2x2
 (const EMatrix& rhs, const Node* node, int first) {
-
-  // -----------------------
-  // |          |          |
-  // |  dense   |  lowrank |
-  // |          |          |
-  // -----------------------
-  // |          |          |
-  // | lowrank  |   dense  |
-  // |          |          |
-  // -----------------------
 
   int second = first + 1;
   const EMatrix& U0 = node->child( first, second )->umat();
@@ -113,20 +122,19 @@ EMatrix HMat::solve_2x2
 #ifdef DEBUG
   assert( U0.rows()+U1.rows() == rhs.rows() );
 #endif
-  EMatrix rhsSub0( U0.rows(), rhs.cols() + U0.cols() );
-  EMatrix rhsSub1( U1.rows(), rhs.cols() + U1.cols() );
-  rhsSub0.leftCols( rhs.cols() ) = rhs.topRows(    U0.rows() );
-  rhsSub1.leftCols( rhs.cols() ) = rhs.bottomRows( U1.rows() );
-  rhsSub0.rightCols( U0.cols() ) = U0;
-  rhsSub1.rightCols( U1.cols() ) = U1;
-
+  // new right hand side for two sub-problems :
+  //   rhsSub0 = [ rhsTop, U0 ]
+  //   rhsSub1 = [ rhsBot, U1 ]
+  EMatrix rhsSub0 = NewRHS<TOP>   (rhs, U0);
+  EMatrix rhsSub1 = NewRHS<BOTTOM>(rhs, U1);
+    
   // recursively solve
   const EMatrix x0 = solve( rhsSub0, node->child( first,  first  ) );
   const EMatrix x1 = solve( rhsSub1, node->child( second, second ) );
   return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
 }
 
-EMatrix HMat::AssembleSolution
+/*static*/ EMatrix AssembleSolution
 (const EMatrix& x0, const EMatrix& x1, int rhs_cols,
  const EMatrix& V0, const EMatrix& V1) {
 
@@ -158,3 +166,21 @@ EMatrix HMat::AssembleSolution
 
   return result;
 }
+
+template <SubProblem type>
+/*static */ EMatrix NewRHS(const EMatrix& oldRHS, const EMatrix& U) {
+#ifdef DEBUG
+  assert( type==TOP || type==BOTTOM );
+#endif
+  EMatrix rhs( U.rows(), oldRHS.cols() + U.cols() );
+  if (type == TOP) {
+    // rhs = [ rhsTop, U ]
+    rhs << oldRHS.topRows( U.rows() ), U;
+  }
+  else {
+    // rhs = [ rhsBot, U ]
+    rhs << oldRHS.bottomRows( U.rows() ), U;
+  }
+  return rhs;
+}
+

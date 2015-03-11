@@ -31,10 +31,6 @@ private:
   EMatrix solve_2x2
   (const EMatrix&, const Node*, int);
 
-  EMatrix AssembleSolution
-  (const EMatrix& x0, const EMatrix& x1, int,
-   const EMatrix& V0, const EMatrix& V1);
-
   // helper function for the destructor
   void DestroyNode(Node* node);
   
@@ -46,8 +42,6 @@ private:
   // root of the hierarchical tree
   Node* treeRoot_;
 };
-
-
 
 
 #endif // HMAT_HPP
