@@ -6,6 +6,8 @@
 
 #include <vector> // for PartialSum()
 
+// the simplist way to get low rank factorization from a sparse
+//  matrix : A = sum_k A(i_k, j_k) e_{i_k} e_{j_k}^T
 void ComputeLowRank
 (EMatrix& UMat, EMatrix& VMat, const EMatrix& A);
 
@@ -29,16 +31,13 @@ void PartialSum(T vec[], int size) {
   vec[i] = sum;
 }
 
-inline bool Admissible
-(Dim2 source, Dim2 target, AdmissType admissType) {
-  if ( admissType == STRONG )
-    return Max( Abs( source - target ) ) > 1;
-  else
-    return source != target;
-}
+void PartialSum( std::vector<int>& vec);
 
-inline Dim2 ZorderIdx( int idx ) {
-  return Dim2( idx>>1, idx&1 );
+// check admissibility
+bool Admissible(Point2 source, Point2 target, AdmissType admissType);
+
+inline Point2 ZorderIdx( int idx ) {
+  return Point2( idx>>1, idx&1 );
 }
 
 EMatrix FormUfrom2x2

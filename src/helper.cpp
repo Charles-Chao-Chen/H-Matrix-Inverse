@@ -57,27 +57,27 @@ void ComputeLowRank_SVD
   EMatrix U = svd.matrixU();
   EMatrix V = svd.matrixV();
 
-  // handle (nearly) zero matrix
+  // handle (numerically) zero matrix
   if ( S(0) < eps ) {
     UMat = EMatrix::Zero( A.rows(), 0 );
     VMat = EMatrix::Zero( 0, A.cols() );
-    return;
   }
-  
-  U.col(0) *= S(0);
-  int i=1;
-  for (; i<S.size(); i++) {
-    if (S(i)/S(i-1) > eps)
-      U.col(i) *= S(i);
-    else
-      break;
+  else {
+    U.col(0) *= S(0);
+    int i=1;
+    for (; i<S.size(); i++) {
+      if (S(i)/S(i-1) > eps)
+	U.col(i) *= S(i);
+      else
+	break;
+    }
+    UMat = U.leftCols(i);
+    VMat = V.leftCols(i).transpose();
   }
-  UMat = U.leftCols(i);
-  VMat = V.leftCols(i).transpose();
-  
+
 #ifdef DEBUG
   std::cout << "Matrix size : " << S.size()
-	    << " rank : " << i
+	    << " rank : " << UMat.cols()
 	    << std::endl;
   std::cout << "Error for low rank approximation: "
 	    << (A - UMat*VMat).norm()
@@ -102,8 +102,7 @@ void PartialSum( std::vector<int>& vec) {
   vec[i] = sum;
 }
 
-
-// The (global) low rank prepresentation for 2x2 low rank blocks
+// The low rank prepresentation for 2x2 low rank blocks
 //    -----------------------
 //    |          |          |
 //    |  u0*v0T  |  u1*v1T  |
@@ -141,7 +140,7 @@ void PartialSum( std::vector<int>& vec) {
 //    |    |    |    |    |
 //    |    |    |    |    |
 //
-// Here we adopt the first case for the following four functions.
+// Here we adopt the first case for the following two functions.
 
 EMatrix FormUfrom2x2
 (const EMatrix& U0, const EMatrix& U1,
@@ -151,10 +150,10 @@ EMatrix FormUfrom2x2
   assert( U0.rows() == U1.rows() );
   assert( U2.rows() == U3.rows() );
 #endif
-  long int rows[] = {U0.rows(), U2.rows(), 0};
-  long int cols[] = {U0.cols(), U1.cols(), U2.cols(), U3.cols(), 0};
-  PartialSum( rows, 3);
-  PartialSum( cols, 5);
+  long rows[] = {U0.rows(), U2.rows(), 0};
+  long cols[] = {U0.cols(), U1.cols(), U2.cols(), U3.cols(), 0};
+  PartialSum( rows, 3 );
+  PartialSum( cols, 5 );
 #ifdef DEBUG
   assert( rows[2] == U0.rows()+U2.rows() );
   assert( cols[4] == U0.cols()+U1.cols()+U2.cols()+U3.cols() );
@@ -176,8 +175,8 @@ EMatrix FormVfrom2x2
   assert( V0.cols() == V2.cols() );
   assert( V1.cols() == V3.cols() );
 #endif
-  long int cols[] = {V0.cols(), V1.cols(), 0};
-  long int rows[] = {V0.rows(), V1.rows(), V2.rows(), V3.rows(), 0};
+  long cols[] = {V0.cols(), V1.cols(), 0};
+  long rows[] = {V0.rows(), V1.rows(), V2.rows(), V3.rows(), 0};
   PartialSum( cols, 3);
   PartialSum( rows, 5);
 #ifdef DEBUG
@@ -193,4 +192,10 @@ EMatrix FormVfrom2x2
   return V;
 }
 
+bool Admissible (Point2 source, Point2 target, AdmissType admissType) {
+  if ( admissType == STRONG )
+    return Point2::max( Point2::abs( source - target ) ) > 1;
+  else
+    return source != target;
+}
 

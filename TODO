@@ -1,5 +1,7 @@
 - implement maxRank as the upper bound for off-diagonal blocks
 
+- make computeLowRank_SVD() accept eps as a varaible
+
 - implement templated Point class and Rect class for 1D, 2D and 3D
 
 - extend the solver to 1D (easy) and 3D (recursivly call 1D solve

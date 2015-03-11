@@ -1,8 +1,7 @@
 #include "dim2.hpp"
 
-#include <algorithm> // for std::max
+#include <algorithm> // for std::max and std::abs
 #include <assert.h>
-#include <stdlib.h>  // for abs
 
 Point2::Point2()
   : x_(0), y_(0) {}
@@ -41,7 +40,6 @@ bool operator== (const Point2& a, const Point2& b) {
 bool operator!= (const Point2& a, const Point2& b) {
   return ! (a==b);
 }
-
 
 Rect2::Rect2() { x[0]=x[1]=0; }
 

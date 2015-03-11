@@ -32,7 +32,7 @@ bool operator== (const Point2& a, const Point2& b);
 
 bool operator!= (const Point2& a, const Point2& b);
 
-// rectangle in 2 dimensions with width and height in integers
+// two dimensional rectangle with width and height in integers
 class Rect2 {
 public:
   // constructor
