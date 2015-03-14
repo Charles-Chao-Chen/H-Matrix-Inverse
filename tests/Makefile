@@ -8,11 +8,13 @@ CCFLAGS = -Wall $(INCLUDE)
 #HEADER  = ../include/hmap.hpp
 
 EXE = solve
-SRC = hmat.cpp node.cpp helper.cpp dim2.cpp
+SRC = hmat.cpp node.cpp helper.cpp dim2.cpp timer.cpp
 # add prefix
 OBJ = $(join $(addsuffix ../src/, $(dir $(SRC))), $(notdir $(SRC:.cpp=.o)))
 OBJ += solve.o
 
+# enable compiler optimization
+all: CCFLAGS += -O2
 all: $(EXE)
 
 # debugging mode

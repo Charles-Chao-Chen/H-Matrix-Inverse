@@ -71,7 +71,9 @@ void HMat::DestroyNode(Node* node) {
 }
 
 EMatrix HMat::solve( const EMatrix& rhs ) {
+#ifdef DEBUG
   std::cout << "Starting fast solver ..." << std::endl;
+#endif
   return solve( rhs, treeRoot_ );
 }
 

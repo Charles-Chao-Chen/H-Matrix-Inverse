@@ -26,7 +26,7 @@ std::cout << "Elapsed time : " << tStop-tStart << std::endl;
 }
 
 void Timer::get_elapsed_time(const char* msg) {
-std::cout << msg << " takes : "
+std::cout << msg << " : "
 << tStop-tStart << " seconds" << std::endl;
 }
 

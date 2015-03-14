@@ -1,3 +1,10 @@
+- implement my own z-order scheme using interlacing bits.
+   There are also nice code online for reference.
+
+- use the low accuracy solver as preconditioner
+
+- time the code with different ranks.
+
 - implement maxRank as the upper bound for off-diagonal blocks
 
 - make computeLowRank_SVD() accept eps as a varaible

@@ -47,30 +47,72 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
   
 int main(int argc, char *argv[]) {
 
+  // default grid size
   int nx = 32, ny = 32;
-  Eigen::MatrixXd A;
-  //Laplacian(A, nx, ny);
-  A = Laplacian(nx, ny);
-
   int numLevels = 3;
-  ZorderPermute perm(nx, ny, numLevels);
-  Eigen::MatrixXd Aperm = perm*A*perm.inverse();
-  
   int maxRank = 1;
   AdmissType admiss = WEAK;
-  HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
-
-  // random right hand side
   int nRhs = 2;
+  
+  // parse command line arguments
+  for (int i = 1; i < argc; i++) {
+    if (!strcmp(argv[i], "-n")) {
+      nx = ny = atoi(argv[++i]);
+      continue;
+    }
+    if (!strcmp(argv[i], "-l")) {
+      numLevels = atoi(argv[++i]);
+      continue;
+    }
+    if (!strcmp(argv[i], "-r")) {
+      maxRank = atoi(argv[++i]);
+      continue;
+    }
+    if (!strcmp(argv[i], "-rhs")) {
+      nRhs = atoi(argv[++i]);
+      continue;
+    }
+  }
+
+  printf("\n------------ configuration ------------\n");
+  printf("Problem (grid) size   : (%d x %d)\n", nx, ny);
+  printf("Hierarchy level       : %d\n", numLevels);
+  printf("Off-diag rank (bound) : %d\n", maxRank);
+  printf("Admissibility         : %s\n", (admiss==WEAK) ? "WEAK" : "unkown");
+  printf("# of right hand size  : %d\n", nRhs);
+  printf("---------------------------------------\n\n");
+  
+  Timer t;
+
+  // descritize lapacian operator
+  t.start();
+  Eigen::MatrixXd A = Laplacian(nx, ny);
+  t.stop(); t.get_elapsed_time("generate A");
+  
+  // random right hand side
   Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
 
-  //Eigen::MatrixXd x1 = Ah.solve( rhs );
+  // z-order permutation matrix
+  ZorderPermute perm(nx, ny, numLevels);
+  
+  // reordered matrix
+  t.start();
+  Eigen::MatrixXd Aperm = perm*A;
+  t.stop(); t.get_elapsed_time("permute A (dgemm)");
 
-
-  // get accuracy and time for the h-solver
-  Timer t; t.start();
+  t.start();
+  Aperm = Aperm*perm.inverse();
+  t.stop(); t.get_elapsed_time("permute A (dgemm)");
+  
+  // build hierarchical tree
+  t.start();
+  HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
+  t.stop(); t.get_elapsed_time("build tree");
+  
+  // get accuracy and timing for the h-solver
+  t.start();
   Eigen::MatrixXd x1 = Ah.solve( rhs );
-  t.stop(); t.get_elapsed_time();
+  t.stop(); t.get_elapsed_time("solver");
   std::cout << "Fast solver residule : "
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
