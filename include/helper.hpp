@@ -12,7 +12,7 @@ void ComputeLowRank
 (EMatrix& UMat, EMatrix& VMat, const EMatrix& A);
 
 void ComputeLowRank_SVD
-(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, double eps);
+(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, const int maxRank);
 
 // compute the partial sum of the input array
 //  e.g. given : 1, 2, 3

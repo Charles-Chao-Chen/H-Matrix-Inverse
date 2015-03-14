@@ -23,7 +23,8 @@ public :
   (const EMatrix& A,
    const Point2& source, const Point2& target,
    const Rect2& srcSize, const Rect2& tgtSize,
-   const AdmissType admissType, int curLevel, int numLevels);
+   const int curLevel,   const int numLevels,
+   const int maxRank,    const AdmissType admissType);
   
 public:
   

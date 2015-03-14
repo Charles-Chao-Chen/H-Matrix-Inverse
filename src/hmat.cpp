@@ -49,7 +49,8 @@ HMat::HMat
   treeRoot_ = new Node(A,
 		       rootSource,  rootTarget,
 		       rootSrcSize, rootTgtSize,
-		       admissType_, rootLevel, numLevels_);
+		       rootLevel,   numLevels_,
+		       maxRank,     admissType_);
 }
 
 HMat::~HMat() {

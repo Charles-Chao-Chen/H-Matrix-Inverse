@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-
 // empty constructor for debugging purpose
 Node::Node() {}
 
@@ -11,7 +10,8 @@ Node::Node
 (const EMatrix& A,
  const Point2& source, const Point2& target,
  const Rect2& srcSize, const Rect2& tgtSize,
- const AdmissType admissType, int curLevel, int numLevels)
+ const int curLevel,   const int numLevels,
+ const int maxRank,    const AdmissType admissType)
 
   : source_ (source),  target_ (target),
     srcSize_(srcSize), tgtSize_(tgtSize)
@@ -26,7 +26,7 @@ Node::Node
     blockType = LOWRANK;
 
     //TODO: make eps a member variable in HMat class
-    ComputeLowRank_SVD( UMat, VMat, A, 1e-3 );
+    ComputeLowRank_SVD( UMat, VMat, A, maxRank );
   }
 
   // dense block
@@ -80,9 +80,10 @@ Node::Node
 	  = A.block( startRow, startCol,
 		     tgtSizeChild.area(), srcSizeChild.area() );
 	children[t][s] = new Node(Achild,
-				  srcChild, tgtChild,
+				  srcChild,     tgtChild,
 				  srcSizeChild, tgtSizeChild,
-				  admissType, lChild, numLevels);
+				  lChild,       numLevels,
+				  maxRank,      admissType);
 	// update column offset
 	startCol += srcSizeChild.area();
       }
