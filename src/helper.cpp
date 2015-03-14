@@ -44,7 +44,7 @@ void ComputeLowRank
 }
 
 void ComputeLowRank_SVD
-(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, double eps) {
+(EMatrix& UMat, EMatrix& VMat, const EMatrix& A, const int maxRank) {
   
 #ifdef DEBUG
   std::cout << "  Form the low rank block ..." << std::endl;
@@ -58,15 +58,15 @@ void ComputeLowRank_SVD
   EMatrix V = svd.matrixV();
 
   // handle (numerically) zero matrix
-  if ( S(0) < eps ) {
+  if ( S(0) < SVD_ZERO_TOL ) {
     UMat = EMatrix::Zero( A.rows(), 0 );
     VMat = EMatrix::Zero( 0, A.cols() );
   }
   else {
     U.col(0) *= S(0);
     int i=1;
-    for (; i<S.size(); i++) {
-      if (S(i)/S(i-1) > eps)
+    for (; i<S.size() && i<maxRank; i++) {
+      if (S(i)/S(i-1) > SVD_RANK_TOL)
 	U.col(i) *= S(i);
       else
 	break;
