@@ -71,6 +71,10 @@ void HMat::DestroyNode(Node* node) {
   }
 }
 
+EMatrix HMat::operator/( const EMatrix& rhs ) {
+  return solve( rhs );
+}
+
 EMatrix HMat::solve( const EMatrix& rhs ) {
 #ifdef DEBUG
   std::cout << "Starting fast solver ..." << std::endl;
@@ -197,3 +201,7 @@ template <SubProblem type>
   return rhs;
 }
 
+// A * b
+EMatrix HMat::operator*(const EMatrix& b) {
+  return treeRoot_->multiply(b);
+}

@@ -21,6 +21,12 @@ public:
   // solve the linear system with the right hand side as the input
   //  it also accepts a single right hand size as an eigen vector
   EMatrix solve(const EMatrix&);
+
+  // wrapper for solve()
+  EMatrix operator/(const EMatrix&);
+
+  // matrix vector product
+  EMatrix operator*(const EMatrix&);
   
 private:
   

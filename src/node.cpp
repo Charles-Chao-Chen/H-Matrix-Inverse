@@ -137,3 +137,34 @@ EMatrix Node::get_botV() const {
   return FormVfrom2x2( V0, V1, V2, V3 );
 }
 
+EMatrix Node::multiply(const EMatrix& x) const {
+  if (blockType == DENSE) {
+    return DMat*x;
+  }
+  else if (blockType == LOWRANK) {
+    return UMat*(VMat*x);
+  }
+  else if (blockType == HIERARCHY) {
+    assert( srcSize_.area() == x.rows() );
+    EMatrix y = EMatrix::Zero( tgtSize_.area(), x.cols() );
+    const Node* child = children[0][0];
+    for (int r=0, rowSdr=0; r<4; r++) {
+      int rowSize = child->tgtSize_.area();
+      for (int c=0, colSdr=0; c<4; c++) {
+	int colSize = child->srcSize_.area();
+	y.block(rowSdr,0,rowSize,x.cols())
+	  += child->multiply(x.block(colSdr,0,colSize,x.cols()));
+	colSdr += colSize;
+	child  ++;
+      }
+      rowSdr += rowSize;
+    }
+    return y;
+  }
+  else {
+    ErrorMessage("block type not defined.");
+    assert(false);
+    //deal with compiler warning
+    return EMatrix::Zero(1,1);
+  }
+}

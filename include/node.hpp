@@ -27,10 +27,14 @@ public :
    const int maxRank,    const AdmissType admissType);
   
 public:
+
+  // H * vector
+  EMatrix multiply(const EMatrix&) const;
   
   bool is_leaf() const;
-  
-  Node* child(int, int); // get child pointer
+
+  // get child pointer
+  Node* child(int, int);
   const Node* child(int, int) const;
 
   // for hierarchical nodes only
