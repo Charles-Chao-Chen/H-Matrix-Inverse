@@ -147,13 +147,16 @@ EMatrix Node::multiply(const EMatrix& x) const {
   else if (blockType == HIERARCHY) {
     assert( srcSize_.area() == x.rows() );
     EMatrix y = EMatrix::Zero( tgtSize_.area(), x.cols() );
-    const Node* child = children[0][0];
+    //const Node** child = &(children[0][0]);
+    Node* const* child = &(children[0][0]);
     for (int r=0, rowSdr=0; r<4; r++) {
-      int rowSize = child->tgtSize_.area();
+      int rowSize = (*child)->tgtSize_.area();
       for (int c=0, colSdr=0; c<4; c++) {
-	int colSize = child->srcSize_.area();
+	int colSize = (*child)->srcSize_.area();
+
+	EMatrix tmp=(*child)->multiply(x.block(colSdr,0,colSize,x.cols()));
 	y.block(rowSdr,0,rowSize,x.cols())
-	  += child->multiply(x.block(colSdr,0,colSize,x.cols()));
+	  += tmp;
 	colSdr += colSize;
 	child  ++;
       }
