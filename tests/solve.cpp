@@ -147,8 +147,10 @@ int main(int argc, char *argv[]) {
 
   // TODO: use as preconditioner for CG
   // (1) implement CG : check
+  //      note: optimize the # of dot products, like resuing (r,r);
   // (2) implement PCG
 
+  /*
   // right hand size
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
@@ -168,6 +170,36 @@ int main(int argc, char *argv[]) {
     beta = r_cur.dot(r_cur) / r_pre.dot(r_pre);
     p = r_cur + beta * p;
     r_pre = r_cur;
+    j++;
+    std::cout << "residule : " << r_cur.norm() << std::endl;
+  }
+  std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
+  */
+
+
+  // right hand size
+  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
+  Eigen::VectorXd r_cur = b;
+  Eigen::VectorXd z_cur = Ah/b;
+  Eigen::VectorXd r_pre = r_cur;
+  Eigen::VectorXd z_pre = z_cur;
+  Eigen::VectorXd p = z_cur;
+  Eigen::VectorXd Ap;
+  double alpha, beta;
+  int j = 0;
+  while (j            < ITER_NUM &&
+	 r_cur.norm() > ITER_TOL ) {
+    
+    Ap = Aperm * p;
+    alpha = z_pre.dot(r_pre) / Ap.dot(p);
+    x += alpha * p;
+    r_cur = r_pre - alpha * Ap;
+    z_cur = Ah / r_cur;
+    beta = z_cur.dot(r_cur) / z_pre.dot(r_pre);
+    p = z_cur + beta * p;
+    r_pre = r_cur;
+    z_pre = z_cur;
     j++;
     std::cout << "residule : " << r_cur.norm() << std::endl;
   }
