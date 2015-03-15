@@ -1,7 +1,10 @@
 CC = g++
 
 #EIGEN   = /usr/include/eigen3/
-EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
+# "eigen" on corn
+#EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
+# "eigen" on sapling
+EIGEN   = /home/cchen10/Software/eigen-eigen-10219c95fe65
 INCLUDE = -I ../include -I $(EIGEN)
 CCFLAGS = -Wall $(INCLUDE)
 

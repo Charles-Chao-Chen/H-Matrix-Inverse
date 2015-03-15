@@ -5,6 +5,9 @@
 #include "hmat.hpp"
 #include "timer.hpp"
 
+// stopping criteria for iterative solve
+const double ITER_TOL = 1e-10;
+
 class ZorderPermute {
   typedef Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> PMatrix;
 public:
@@ -50,7 +53,7 @@ int main(int argc, char *argv[]) {
   // default grid size
   int nx = 32, ny = 32;
   int numLevels = 3;
-  int maxRank = 1;
+  int maxRank = 16;
   AdmissType admiss = WEAK;
   int nRhs = 2;
   
@@ -111,12 +114,49 @@ int main(int argc, char *argv[]) {
   
   // get accuracy and timing for the h-solver
   t.start();
-  Eigen::MatrixXd x1 = Ah.solve( rhs );
+  Eigen::MatrixXd x1 = Ah/rhs;
   t.stop(); t.get_elapsed_time("solver");
   std::cout << "Fast solver residule : "
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
 
+  // TODO: use the solver as preconditioner for
+  //  fix point iterationa and GMRES
+  // (1) implement maxRank : done
+  // note: the accuracy is 1.0e with less rank than 16
+  // (2) implement hmat * vec
+  // (3) implement fix point iteration
+  
+
+  int N = nx*ny;
+
+  /*
+    // debugging hmat * vec
+  Eigen::MatrixXd x = Eigen::MatrixXd::Random(N, 1);
+  std::cout << "correct : \n" << Aperm*x << std::endl;
+  std::cout << "hmat * vec : \n" << Ah*x << std::endl;
+  std::cout << "debugging hmat * vec : "
+	    << (Ah*x - Aperm*x).norm()
+	    << std::endl;
+    */
+    
+
+  int niter = 1e5;
+  Eigen::MatrixXd x_cur = Eigen::MatrixXd::Zero(N, nRhs);
+  for (int i=0; i<niter; i++) {
+    Eigen::MatrixXd r = rhs - Aperm * x_cur;
+    Eigen::MatrixXd del = Ah/r ;
+    std::cout << "residule : " << r.norm() << std::endl;
+    x_cur += del;
+
+    if (r.norm() <= ITER_TOL) {
+      std::cout << "Converged!\n" << " iter # : "
+		<<  i+1 << std::endl;
+      break;
+    }
+  }
+
+    
   /*
   // get accuracy and time for the standard LU method
   t.start();
