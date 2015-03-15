@@ -3,42 +3,12 @@
 #include <stdio.h>
 
 #include "hmat.hpp"
+#include "zperm.hpp"
 #include "timer.hpp"
 
 // stopping criteria for iterative solve
+const int    ITER_NUM = 1000;
 const double ITER_TOL = 1e-10;
-
-class ZorderPermute {
-  typedef Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> PMatrix;
-public:
-  // three constructors
-  //  (1) defalut constructor
-  //  (2) takes the grid information and compute the permutation matrix
-  //  (3) takes the permutation matrix
-  ZorderPermute();
-  ZorderPermute(int nx, int ny, int level);
-  explicit ZorderPermute(const PMatrix&);
-  
-  // the inverse (transpose) permutation
-  ZorderPermute inverse();
-  ZorderPermute transpose();
-  
-  // operator overloading functions
-  //  so the object can be used like a permutation matrix
-  friend Eigen::MatrixXd operator*(const ZorderPermute&,
-				   const Eigen::MatrixXd&);
-  friend Eigen::MatrixXd operator*(const Eigen::MatrixXd&,
-				   const ZorderPermute&);
-private:  
-  void BuildMapOnQuadrant
-  (int* map, int& index, int curLevel, int thisXSize, int thisYSize);
-  
-  // private variable
-  int nx_;
-  int ny_;
-  int numLevel_;
-  PMatrix P;
-};
 
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
@@ -120,44 +90,7 @@ int main(int argc, char *argv[]) {
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
 
-  // TODO: use the solver as preconditioner for
-  //  fix point iterationa and GMRES
-  // (1) implement maxRank : done
-  // note: the accuracy is 1.0e with less rank than 16
-  // (2) implement hmat * vec
-  // (3) implement fix point iteration
-  
-
-  int N = nx*ny;
-
-  /*
-    // debugging hmat * vec
-  Eigen::MatrixXd x = Eigen::MatrixXd::Random(N, 1);
-  std::cout << "correct : \n" << Aperm*x << std::endl;
-  std::cout << "hmat * vec : \n" << Ah*x << std::endl;
-  std::cout << "debugging hmat * vec : "
-	    << (Ah*x - Aperm*x).norm()
-	    << std::endl;
-    */
-    
-
-  int niter = 1e5;
-  Eigen::MatrixXd x_cur = Eigen::MatrixXd::Zero(N, nRhs);
-  for (int i=0; i<niter; i++) {
-    Eigen::MatrixXd r = rhs - Aperm * x_cur;
-    Eigen::MatrixXd del = Ah/r ;
-    std::cout << "residule : " << r.norm() << std::endl;
-    x_cur += del;
-
-    if (r.norm() <= ITER_TOL) {
-      std::cout << "Converged!\n" << " iter # : "
-		<<  i+1 << std::endl;
-      break;
-    }
-  }
-
-    
-  /*
+    /*
   // get accuracy and time for the standard LU method
   t.start();
   Eigen::MatrixXd x2 = A.lu().solve( rhs );
@@ -174,7 +107,73 @@ int main(int argc, char *argv[]) {
   Eigen::MatrixXd xOrig = perm.inverse()*x3;
   printf("Residule: %e\n", (A*xOrig - rhs).norm() );
   */
+
+  int N = nx*ny;
     
+  // TODO: use the solver as preconditioner for
+  //  fix point iterationa and GMRES
+  // (1) implement maxRank : done
+  // note: the accuracy is 1.0e with less rank than 16
+  // (2) implement hmat * vec
+  // (3) implement fix point iteration
+  
+
+  /*
+    // debugging hmat * vec
+  Eigen::MatrixXd x = Eigen::MatrixXd::Random(N, 1);
+  std::cout << "correct : \n" << Aperm*x << std::endl;
+  std::cout << "hmat * vec : \n" << Ah*x << std::endl;
+  std::cout << "debugging hmat * vec : "
+	    << (Ah*x - Aperm*x).norm()
+	    << std::endl;
+    */
+    
+  /*
+  int niter = 1e5;
+  Eigen::MatrixXd x_cur = Eigen::MatrixXd::Zero(N, nRhs);
+  for (int i=0; i<niter; i++) {
+    Eigen::MatrixXd r = rhs - Aperm * x_cur;
+    Eigen::MatrixXd del = Ah/r ;
+    std::cout << "residule : " << r.norm() << std::endl;
+    x_cur += del;
+
+    if (r.norm() <= ITER_TOL) {
+      std::cout << "Converged!\n" << " iter # : "
+		<<  i+1 << std::endl;
+      break;
+    }
+  }
+  */
+
+  // TODO: use as preconditioner for CG
+  // (1) implement CG : check
+  // (2) implement PCG
+
+  // right hand size
+  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
+  Eigen::VectorXd r_cur = b;
+  Eigen::VectorXd r_pre = b;
+  Eigen::VectorXd p = r_cur;
+  Eigen::VectorXd Ap;
+  double alpha, beta;
+  int j = 0;
+  while (j            < ITER_NUM &&
+	 r_cur.norm() > ITER_TOL ) {
+    
+    Ap = Aperm * p;
+    alpha = r_pre.dot(r_pre) / Ap.dot(p);
+    x += alpha * p;
+    r_cur = r_pre - alpha * Ap;
+    beta = r_cur.dot(r_cur) / r_pre.dot(r_pre);
+    p = r_cur + beta * p;
+    r_pre = r_cur;
+    j++;
+    std::cout << "residule : " << r_cur.norm() << std::endl;
+  }
+  std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
+
+  
   return 0;
 }
 
@@ -206,94 +205,5 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
     os << vec[i] << " ";
   os << std::endl;
   return os;
-}
-
-ZorderPermute::ZorderPermute()
-  : nx_(0), ny_(0), numLevel_(0) {}
-
-ZorderPermute::ZorderPermute(int nx, int ny, int level)
-  : nx_(nx), ny_(ny), numLevel_(level) {
-
-#ifdef DEBUG
-  std::cout << "Grid : " << nx_ << " x " << ny_ << std::endl;
-  std::cout << " hierarchy level : " << level << std::endl;
-#endif
-  int N = nx_*ny_;
-  int map[N];
-
-  // Fill the mapping from the 'natural' x-y-z ordering
-  int index = 0;
-  int rootLevel = 0;
-  BuildMapOnQuadrant(map, index, rootLevel, nx_, ny_);
-  assert(index == N);
-    
-  //P = Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>(N);
-  P.resize(N);
-  for (int i=0; i<N; i++)
-    P.indices()[i] = map[i];
-}
-
-ZorderPermute::ZorderPermute(const PMatrix& Pinv)
-  : nx_(0), ny_(0), numLevel_(0) {
-  P = Pinv;
-}
-
-void ZorderPermute::BuildMapOnQuadrant
-(int* map, int& index, int curLevel, int thisXSize, int thisYSize)
-{
-    if( curLevel == numLevel_-1 )
-    {
-        // Stamp these indices into the buffer
-        for( int j=0; j<thisYSize; ++j )
-        {
-            int* thisRow = &map[j*nx_];
-            for( int i=0; i<thisXSize; ++i )
-                thisRow[i] = index++;
-        }
-    }
-    else
-    {
-        const int leftWidth = thisXSize/2;
-        const int rightWidth = thisXSize - leftWidth;
-        const int bottomHeight = thisYSize/2;
-        const int topHeight = thisYSize - bottomHeight;
-
-        // Recurse on the lower-left quadrant
-        BuildMapOnQuadrant
-        ( &map[0], index, curLevel+1,
-          leftWidth, bottomHeight );
-        // Recurse on the lower-right quadrant
-        BuildMapOnQuadrant
-        ( &map[leftWidth], index, curLevel+1,
-          rightWidth, bottomHeight );
-        // Recurse on the upper-left quadrant
-        BuildMapOnQuadrant
-        ( &map[bottomHeight*nx_], index, curLevel+1,
-          leftWidth, topHeight );
-        // Recurse on the upper-right quadrant
-        BuildMapOnQuadrant
-        ( &map[bottomHeight*nx_+leftWidth], index, curLevel+1,
-          rightWidth, topHeight );
-    }
-}
-
-ZorderPermute ZorderPermute::inverse() {
-  return ZorderPermute( P.inverse() ); 
-}
-
-ZorderPermute ZorderPermute::transpose() {
-  return inverse();
-}
-
-Eigen::MatrixXd operator*(const ZorderPermute& perm,
-			  const Eigen::MatrixXd& A) {
-  assert( perm.P.size() != 0);
-  return (perm.P)*A;
-}
-
-Eigen::MatrixXd operator*(const Eigen::MatrixXd& A,
-			  const ZorderPermute& perm) {
-  assert( perm.P.size() != 0);
-  return A*(perm.P);
 }
 
