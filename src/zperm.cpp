@@ -1,6 +1,7 @@
 #include "zperm.hpp"
 
 #include <assert.h>
+#include <iostream>
 
 ZorderPermute::ZorderPermute()
   : nx_(0), ny_(0), numLevel_(0) {}

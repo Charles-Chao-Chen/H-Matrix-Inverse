@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 typedef Eigen::MatrixXd EMatrix;
+typedef Eigen::VectorXd EVector;
 
 // constants used in ComputeLowRank_SVD()
 #include <float.h>

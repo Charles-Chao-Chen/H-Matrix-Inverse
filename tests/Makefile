@@ -5,16 +5,21 @@ CC = g++
 #EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
 # "eigen" on sapling
 EIGEN   = /home/cchen10/Software/eigen-eigen-10219c95fe65
-INCLUDE = -I ../include -I $(EIGEN)
+INCLUDE = -I ../include -I ../include/iterSolver/ -I $(EIGEN)
 CCFLAGS = -Wall $(INCLUDE)
 
 #HEADER  = ../include/hmap.hpp
 
 EXE = solve
-SRC = hmat.cpp node.cpp helper.cpp dim2.cpp timer.cpp
+SRC = hmat.cpp node.cpp helper.cpp dim2.cpp zperm.cpp timer.cpp
+SRC_ITER = iterSolverBase.cpp cg.cpp
+
 # add prefix
 OBJ = $(join $(addsuffix ../src/, $(dir $(SRC))), $(notdir $(SRC:.cpp=.o)))
-OBJ += solve.o
+# add prefix
+OBJ_ITER = $(join $(addsuffix ../src/iterSolver/, $(dir $(SRC_ITER))),\
+	$(notdir $(SRC_ITER:.cpp=.o)))
+OBJ += $(OBJ_ITER) solve.o
 
 # enable compiler optimization
 all: CCFLAGS += -O2
@@ -35,5 +40,7 @@ $(EXE) : $(OBJ)
 	$(CC) $(CCFLAGS) $(OBJ) -o $@
 
 clean :
-	rm $(EXE) $(OBJ) *~ ../src/*~ ../include/*~
+	rm $(EXE) $(OBJ) *~ 	\
+	../src/*~     ../src/iterSolver/*~	\
+	../include/*~ ../include/iterSolver/*~
 

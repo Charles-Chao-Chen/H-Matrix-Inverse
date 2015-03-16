@@ -4,6 +4,7 @@
 
 #include "hmat.hpp"
 #include "zperm.hpp"
+#include "cg.hpp"
 #include "timer.hpp"
 
 // stopping criteria for iterative solve
@@ -111,10 +112,11 @@ int main(int argc, char *argv[]) {
   int N = nx*ny;
     
   // TODO: use the solver as preconditioner for
-  //  fix point iterationa and GMRES
+  //  fix point iterationa
   // (1) implement maxRank : done
   // note: the accuracy is 1.0e with less rank than 16
-  // (2) implement hmat * vec
+  // (2) implement hmat * vec : done
+  // note: this is not necessary for this purpose
   // (3) implement fix point iteration
   
 
@@ -147,9 +149,14 @@ int main(int argc, char *argv[]) {
 
   // TODO: use as preconditioner for CG
   // (1) implement CG : check
-  //      note: optimize the # of dot products, like resuing (r,r);
+  // note: optimize the # of dot products, like resuing (r,r);
   // (2) implement PCG
 
+  //Eigen::VectorXd b = EMatrix::Random(N,2);
+  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
+  ConjugateGradient cg;
+  cg.solve(Aperm, b);
+  
   /*
   // right hand size
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
@@ -176,7 +183,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
   */
 
-
+  /*
   // right hand size
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
@@ -204,8 +211,27 @@ int main(int argc, char *argv[]) {
     std::cout << "residule : " << r_cur.norm() << std::endl;
   }
   std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
+*/
 
-  
+  /*
+  // TODO: use as preconditioner for GMRES
+  // (1) implement GMRES with O(n^2) QR
+  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
+  Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
+  double beta = b.norm();
+  Eigen::MatrixXd Q0(N, 1);
+  Q0.cols(0) = b / beta;
+  for (int n=0; n<N; n++) {
+    v = Aperm * Q0.rightCols(1);
+    for (int j=0; j<n; j++) {
+      h = Q.col(j).dot(v);
+      v -= h*Q.col(j); 
+    }
+    h_n+1 = v.norm();
+    -++++++
+  }
+*/
+    
   return 0;
 }
 
