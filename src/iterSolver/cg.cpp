@@ -1,13 +1,18 @@
 #include "cg.hpp"
 
-EMatrix ConjugateGradient::solve(const EMatrix& A, const EMatrix& b) {
+#include <assert.h>
+#include <iostream>
+
+EMatrix ConjugateGradient::solve(const EMatrix& A, const EVector& b) {
+  assert( b.cols() == 1 );
+  Eigen::VectorXd x = Eigen::VectorXd::Zero( b.rows() );
   Eigen::VectorXd r_cur = b;
   Eigen::VectorXd r_pre = b;
   Eigen::VectorXd p = r_cur;
   Eigen::VectorXd Ap;
   double alpha, beta;
   int j = 0;
-  while (j            < ITER_NUM &&
+  while (j            < ITER_MAX_NUM &&
 	 r_cur.norm() > ITER_TOL ) {
     
     Ap = A * p;
@@ -21,4 +26,5 @@ EMatrix ConjugateGradient::solve(const EMatrix& A, const EMatrix& b) {
     std::cout << "residule : " << r_cur.norm() << std::endl;
   }
   std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
+  return x;
 }

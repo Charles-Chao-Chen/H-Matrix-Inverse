@@ -3,8 +3,9 @@
 
 #include "iterSolverBase.hpp"
 
-class ConjugateGradient : pulbic iterSolverBase {
-  EMatrix solve(const EMatrix&, const EMatrix&);
+class ConjugateGradient : public IterSolverBase {
+public:
+  EMatrix solve(const EMatrix&, const EVector&);
 };
 
 /*
