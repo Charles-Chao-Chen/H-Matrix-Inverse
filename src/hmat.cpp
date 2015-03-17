@@ -71,18 +71,18 @@ void HMat::DestroyNode(Node* node) {
   }
 }
 
-EMatrix HMat::operator/( const EMatrix& rhs ) {
+EMatrix HMat::operator/( const EMatrix& rhs ) const {
   return solve( rhs );
 }
 
-EMatrix HMat::solve( const EMatrix& rhs ) {
+EMatrix HMat::solve( const EMatrix& rhs ) const {
 #ifdef DEBUG
   std::cout << "Starting fast solver ..." << std::endl;
 #endif
   return solve( rhs, treeRoot_ );
 }
 
-EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
+EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) const {
   if (node->is_leaf()) {
     const EMatrix& denseBlock = node->dmat();
     return denseBlock.lu().solve( rhs );
@@ -123,7 +123,7 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) {
 //  -----------------------
 //  refering to : http://arxiv.org/abs/1403.5337
 EMatrix HMat::solve_2x2
-(const EMatrix& rhs, const Node* node, int first) {
+(const EMatrix& rhs, const Node* node, int first) const {
 
   int second = first + 1;
   const EMatrix& U0 = node->child( first, second )->umat();
