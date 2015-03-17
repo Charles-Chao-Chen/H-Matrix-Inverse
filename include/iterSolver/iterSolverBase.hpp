@@ -4,9 +4,12 @@
 #include "macros.hpp"
 
 // this interface, especially the solve() funtion is inspired by
-// matlab syntax and probably Eigen iterative solver interface
+//  matlab syntax and probably Eigen iterative solver interface
 class IterSolverBase {
 public:
+  // constructor
+  IterSolverBase();
+  
   virtual EMatrix solve(const EMatrix&, const EVector&) = 0;
 
   /*
@@ -18,13 +21,14 @@ public:
 		const int, );
   */
 public:
+  // stopping criteria for iterative solve
   static int    ITER_MAX_NUM;
   static double ITER_TOL;
 
-private:
+protected:
   int num_iter;
   double time;
-  double error;
+  double residule;
 };
 
 #endif

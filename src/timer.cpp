@@ -21,12 +21,16 @@ void Timer::stop() {
   tStop = timer();
 }
 
-void Timer::get_elapsed_time() {
-std::cout << "Elapsed time : " << tStop-tStart << std::endl;
+double Timer::get_elapsed_time() {
+  return tStop-tStart;
 }
 
-void Timer::get_elapsed_time(const char* msg) {
-std::cout << msg << " : "
-<< tStop-tStart << " seconds" << std::endl;
+void Timer::show_elapsed_time() {
+  std::cout << "Elapsed time : " << tStop-tStart << std::endl;
+}
+
+void Timer::show_elapsed_time(const char* msg) {
+  std::cout << msg << " : "
+	    << tStop-tStart << " seconds" << std::endl;
 }
 

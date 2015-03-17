@@ -5,8 +5,9 @@ class Timer {
 public:
   void start();
   void stop();
-  void get_elapsed_time();
-  void get_elapsed_time(const char*);
+  void show_elapsed_time();
+  void show_elapsed_time(const char*);
+  double get_elapsed_time();
 private:
   double tStart;
   double tStop;

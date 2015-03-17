@@ -7,10 +7,6 @@
 #include "cg.hpp"
 #include "timer.hpp"
 
-// stopping criteria for iterative solve
-const int    ITER_NUM = 1000;
-const double ITER_TOL = 1e-10;
-
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
 Eigen::MatrixXd Laplacian(int nx, int ny);
@@ -21,7 +17,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
   
 int main(int argc, char *argv[]) {
 
-  // default grid size
+  // default parameters
   int nx = 32, ny = 32;
   int numLevels = 3;
   int maxRank = 16;
@@ -61,7 +57,7 @@ int main(int argc, char *argv[]) {
   // descritize lapacian operator
   t.start();
   Eigen::MatrixXd A = Laplacian(nx, ny);
-  t.stop(); t.get_elapsed_time("generate A");
+  t.stop(); t.show_elapsed_time("generate A");
   
   // random right hand side
   Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
@@ -72,25 +68,27 @@ int main(int argc, char *argv[]) {
   // reordered matrix
   t.start();
   Eigen::MatrixXd Aperm = perm*A;
-  t.stop(); t.get_elapsed_time("permute A (dgemm)");
+  t.stop(); t.show_elapsed_time("permute A (dgemm)");
 
   t.start();
   Aperm = Aperm*perm.inverse();
-  t.stop(); t.get_elapsed_time("permute A (dgemm)");
+  t.stop(); t.show_elapsed_time("permute A (dgemm)");
   
   // build hierarchical tree
   t.start();
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
-  t.stop(); t.get_elapsed_time("build tree");
+  t.stop(); t.show_elapsed_time("build tree");
   
   // get accuracy and timing for the h-solver
   t.start();
   Eigen::MatrixXd x1 = Ah/rhs;
-  t.stop(); t.get_elapsed_time("solver");
+  t.stop(); t.show_elapsed_time("solver");
   std::cout << "Fast solver residule : "
 	    << (Aperm*x1 - rhs).norm()
 	    << std::endl;
 
+  int N = nx*ny;
+  
     /*
   // get accuracy and time for the standard LU method
   t.start();
@@ -108,8 +106,6 @@ int main(int argc, char *argv[]) {
   Eigen::MatrixXd xOrig = perm.inverse()*x3;
   printf("Residule: %e\n", (A*xOrig - rhs).norm() );
   */
-
-  int N = nx*ny;
     
   // TODO: use the solver as preconditioner for
   //  fix point iterationa
@@ -155,7 +151,9 @@ int main(int argc, char *argv[]) {
   //Eigen::VectorXd b = EMatrix::Random(N,2);
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   ConjugateGradient cg;
-  cg.solve(Aperm, b);
+  Eigen::VectorXd x = cg.solve(Aperm, b);
+  
+  
   
   /*
   // right hand size
