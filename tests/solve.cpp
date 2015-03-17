@@ -4,7 +4,7 @@
 
 #include "hmat.hpp"
 #include "zperm.hpp"
-#include "cg.hpp"
+#include "iterativeSolver.hpp"
 #include "timer.hpp"
 
 // form the sparse matrix for the laplacian operation using
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   // note: the accuracy is 1.0e with less rank than 16
   // (2) implement hmat * vec : done
   // note: this is not necessary for this purpose
-  // (3) implement fix point iteration
+  // (3) implement fix point iteration : done
   
 
   /*
@@ -125,92 +125,20 @@ int main(int argc, char *argv[]) {
 	    << (Ah*x - Aperm*x).norm()
 	    << std::endl;
     */
-    
+
+  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
+  FixedPoint fp;
+  Eigen::VectorXd fp_x0 = fp.solve(Aperm, b, Ah);
+  
+
   /*
-  int niter = 1e5;
-  Eigen::MatrixXd x_cur = Eigen::MatrixXd::Zero(N, nRhs);
-  for (int i=0; i<niter; i++) {
-    Eigen::MatrixXd r = rhs - Aperm * x_cur;
-    Eigen::MatrixXd del = Ah/r ;
-    std::cout << "residule : " << r.norm() << std::endl;
-    x_cur += del;
-
-    if (r.norm() <= ITER_TOL) {
-      std::cout << "Converged!\n" << " iter # : "
-		<<  i+1 << std::endl;
-      break;
-    }
-  }
-  */
-
-  // TODO: use as preconditioner for CG
-  // (1) implement CG : check
-  // note: optimize the # of dot products, like resuing (r,r);
-  // (2) implement PCG
-
   //Eigen::VectorXd b = EMatrix::Random(N,2);
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   ConjugateGradient cg;
-  Eigen::VectorXd x = cg.solve(Aperm, b);
-  
-  
-  
-  /*
-  // right hand size
-  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
-  Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
-  Eigen::VectorXd r_cur = b;
-  Eigen::VectorXd r_pre = b;
-  Eigen::VectorXd p = r_cur;
-  Eigen::VectorXd Ap;
-  double alpha, beta;
-  int j = 0;
-  while (j            < ITER_NUM &&
-	 r_cur.norm() > ITER_TOL ) {
-    
-    Ap = Aperm * p;
-    alpha = r_pre.dot(r_pre) / Ap.dot(p);
-    x += alpha * p;
-    r_cur = r_pre - alpha * Ap;
-    beta = r_cur.dot(r_cur) / r_pre.dot(r_pre);
-    p = r_cur + beta * p;
-    r_pre = r_cur;
-    j++;
-    std::cout << "residule : " << r_cur.norm() << std::endl;
-  }
-  std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
+  Eigen::VectorXd cg_x0 = cg.solve(Aperm, b);
+  Eigen::VectorXd cg_x1 = cg.solve(Aperm, b, Ah);
   */
-
-  /*
-  // right hand size
-  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
-  Eigen::VectorXd x = Eigen::VectorXd::Zero(N);
-  Eigen::VectorXd r_cur = b;
-  Eigen::VectorXd z_cur = Ah/b;
-  Eigen::VectorXd r_pre = r_cur;
-  Eigen::VectorXd z_pre = z_cur;
-  Eigen::VectorXd p = z_cur;
-  Eigen::VectorXd Ap;
-  double alpha, beta;
-  int j = 0;
-  while (j            < ITER_NUM &&
-	 r_cur.norm() > ITER_TOL ) {
-    
-    Ap = Aperm * p;
-    alpha = z_pre.dot(r_pre) / Ap.dot(p);
-    x += alpha * p;
-    r_cur = r_pre - alpha * Ap;
-    z_cur = Ah / r_cur;
-    beta = z_cur.dot(r_cur) / z_pre.dot(r_pre);
-    p = z_cur + beta * p;
-    r_pre = r_cur;
-    z_pre = z_cur;
-    j++;
-    std::cout << "residule : " << r_cur.norm() << std::endl;
-  }
-  std::cout << "Converged!\n" << " iter # : " <<  j << std::endl;
-*/
-
+  
   /*
   // TODO: use as preconditioner for GMRES
   // (1) implement GMRES with O(n^2) QR
