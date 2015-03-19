@@ -12,7 +12,7 @@ CCFLAGS = -Wall $(INCLUDE)
 
 EXE = solve
 SRC = hmat.cpp node.cpp helper.cpp dim2.cpp zperm.cpp timer.cpp
-SRC_ITER = iterSolverBase.cpp cg.cpp fixedPoint.cpp
+SRC_ITER = solverBase.cpp cg.cpp fixedPoint.cpp
 
 # add prefix
 OBJ = $(join $(addsuffix ../src/, $(dir $(SRC))), $(notdir $(SRC:.cpp=.o)))

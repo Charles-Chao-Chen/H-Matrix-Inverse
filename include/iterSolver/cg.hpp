@@ -1,7 +1,7 @@
 #ifndef cg_hpp
 #define cg_hpp
 
-#include "iterSolverBase.hpp"
+#include "solverBase.hpp"
 
 class ConjugateGradient : public IterSolverBase {
 public:

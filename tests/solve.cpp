@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   FixedPoint fp;
-  Eigen::VectorXd fp_x0 = fp.solve(Aperm, b, Ah);
+  Eigen::VectorXd fp_x0 = fp.solve(Aperm, b);
   
 
   /*
