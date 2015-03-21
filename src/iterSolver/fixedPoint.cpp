@@ -21,7 +21,7 @@ EMatrix FP::solve(const EMatrix& A, const EVector& rhs) {
 
     x = L.solve( rhs - U * x );
     r = rhs - A * x;
-#if true
+#ifdef DEBUG
     std::cout << "residule : " << r.norm() << std::endl;
 #endif
   }
