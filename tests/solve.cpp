@@ -3,9 +3,8 @@
 #include <stdio.h>
 
 #include "hmat.hpp"
-#include "zperm.hpp"
 #include "iterativeSolver.hpp"
-#include "timer.hpp"
+#include "helperFun.hpp"
 
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
@@ -14,9 +13,9 @@ Eigen::MatrixXd Laplacian(int nx, int ny);
 // output vector object (for debugging purpose)
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
-  
-int main(int argc, char *argv[]) {
 
+int main(int argc, char *argv[]) {
+  
   // default parameters
   int nx = 32, ny = 32;
   int numLevels = 3;
@@ -60,7 +59,8 @@ int main(int argc, char *argv[]) {
   t.stop(); t.show_elapsed_time("generate A");
   
   // random right hand side
-  Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( nx*ny, nRhs );
+  int N = nx*ny;
+  Eigen::MatrixXd rhs = Eigen::MatrixXd::Random( N, nRhs );
 
   // z-order permutation matrix
   ZorderPermute perm(nx, ny, numLevels);
@@ -78,26 +78,28 @@ int main(int argc, char *argv[]) {
   t.start();
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
   t.stop(); t.show_elapsed_time("build tree");
-  
+
+  /*
   // get accuracy and timing for the h-solver
   t.start();
   Eigen::MatrixXd x1 = Ah/rhs;
   t.stop(); t.show_elapsed_time("solver");
   std::cout << "Fast solver residule : "
-	    << (Aperm*x1 - rhs).norm()
-	    << std::endl;
+  << (Aperm*x1 - rhs).norm()
+  << std::endl;
+  */
 
-  int N = nx*ny;
-  
-    /*
+  /*
   // get accuracy and time for the standard LU method
   t.start();
   Eigen::MatrixXd x2 = A.lu().solve( rhs );
-  t.stop();  t.get_elapsed_time();
+  t.stop();  t.show_elapsed_time();
   std::cout << "Direct solver residule : "
-	    << (A*x2 - rhs).norm()
-	    << std::endl;
-
+  << (A*x2 - rhs).norm()
+  << std::endl;
+  */
+    
+  /*
   // test the accuracy for the original problem
   //  i.e. A x = b
   //      (P*A*P') (P*x) = P*b
@@ -117,19 +119,19 @@ int main(int argc, char *argv[]) {
   
 
   /*
-    // debugging hmat * vec
+  // debugging hmat * vec
   Eigen::MatrixXd x = Eigen::MatrixXd::Random(N, 1);
   std::cout << "correct : \n" << Aperm*x << std::endl;
   std::cout << "hmat * vec : \n" << Ah*x << std::endl;
   std::cout << "debugging hmat * vec : "
-	    << (Ah*x - Aperm*x).norm()
-	    << std::endl;
-    */
+  << (Ah*x - Aperm*x).norm()
+  << std::endl;
+  */
 
   Eigen::VectorXd b = Eigen::VectorXd::Random(N);
   FixedPoint fp;
-  Eigen::VectorXd fp_x0 = fp.solve(Aperm, b);
-  
+  //Eigen::VectorXd fp_x0 = fp.solve(Aperm, b);
+  Eigen::VectorXd fp_x1 = fp.solve(Aperm, b, Ah);
 
   /*
   //Eigen::VectorXd b = EMatrix::Random(N,2);
@@ -148,16 +150,16 @@ int main(int argc, char *argv[]) {
   Eigen::MatrixXd Q0(N, 1);
   Q0.cols(0) = b / beta;
   for (int n=0; n<N; n++) {
-    v = Aperm * Q0.rightCols(1);
-    for (int j=0; j<n; j++) {
-      h = Q.col(j).dot(v);
-      v -= h*Q.col(j); 
-    }
-    h_n+1 = v.norm();
-    -++++++
+  v = Aperm * Q0.rightCols(1);
+  for (int j=0; j<n; j++) {
+  h = Q.col(j).dot(v);
+  v -= h*Q.col(j); 
   }
-*/
-    
+  h_n+1 = v.norm();
+  -++++++
+  }
+  */
+
   return 0;
 }
 
