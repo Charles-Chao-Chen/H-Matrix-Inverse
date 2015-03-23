@@ -1,12 +1,12 @@
 This project aims at implementing a fast algorithm to 
- inverse a weak-admissible h-matrix. The future plan
+ invert a weakly dmissible hierarchical matrix. The future plan
  may be to use the inverse as the initial guess for
  Newton's iteration which converges to the inverse
- of a strong-admissible h-matrix.
+ of a strong admissible hierarchical matrix.
 
-Note: this code uses Eigen linear algebra library:
+Note: the code uses Eigen linear algebra library:
  http://eigen.tuxfamily.org/index.php?title=Main_Page
- change the EIGEN variable in test/Makefile to run
+ change the EIGEN path in test/Makefile to run
  the tests.
 
 TO run the test:
