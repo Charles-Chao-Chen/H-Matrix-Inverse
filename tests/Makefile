@@ -36,11 +36,18 @@ debug: $(EXE)
 profile: CCFLAGS += -pg
 profile: $(EXE)
 
+# run tests
+check: test
+	./test
+
 %.o : %.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@
 
 $(EXE) : $(OBJ)
 	$(CC) $(CCFLAGS) $(OBJ) -o $@
+
+test : $(OBJ) test.cpp
+	$(CC) $(CCFLAGS) $(OBJ) test.cpp -o $@ -lcppunit
 
 clean :
 	rm $(EXE) $(OBJ) *~ 	\
