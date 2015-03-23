@@ -10,6 +10,7 @@
 #include "iterativeSolver.hpp"
 #include "helperFun.hpp"
 
+
 // form the sparse matrix for the laplacian operation using
 //  five point finite difference scheme
 Eigen::MatrixXd Laplacian(int nx, int ny);
@@ -17,6 +18,8 @@ Eigen::MatrixXd Laplacian(int nx, int ny);
 // output vector object (for debugging purpose)
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
+
+
 
 class SolverTest: public CppUnit::TestCase {
   
@@ -65,7 +68,7 @@ public:
 
 int main(int argc, char *argv[]) {
   CppUnit::TextUi::TestRunner runner;
-  runner.addTest(HODLR_Matrix_Test::suite());
+  runner.addTest(SolverTest::suite());
   runner.run();
   return 0;
 }
@@ -99,4 +102,3 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
   os << std::endl;
   return os;
 }
-

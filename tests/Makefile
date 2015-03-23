@@ -2,9 +2,9 @@ CC = g++
 
 #EIGEN   = /usr/include/eigen3/
 # "eigen" on corn
-#EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
+EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
 # "eigen" on sapling
-EIGEN   = /home/cchen10/Software/eigen-eigen-10219c95fe65
+#EIGEN   = /home/cchen10/Software/eigen-eigen-10219c95fe65
 INCLUDE = -I ../include/ -I ../include/helper/ \
 	  -I ../include/iterSolver/ -I $(EIGEN)
 CCFLAGS = -Wall $(INCLUDE)
@@ -22,7 +22,7 @@ OBJ_HELP = $(join $(addsuffix ../src/helper/, $(dir $(SRC_HELP))),\
 	$(notdir $(SRC_HELP:.cpp=.o)))
 OBJ_ITER = $(join $(addsuffix ../src/iterSolver/, $(dir $(SRC_ITER))),\
 	$(notdir $(SRC_ITER:.cpp=.o)))
-OBJ += $(OBJ_HELP) $(OBJ_ITER) solve.o
+OBJ += $(OBJ_HELP) $(OBJ_ITER)
 
 # enable compiler optimization
 all: CCFLAGS += -O2
@@ -43,11 +43,11 @@ check: test
 %.o : %.cpp
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-$(EXE) : $(OBJ)
-	$(CC) $(CCFLAGS) $(OBJ) -o $@
+$(EXE) : $(OBJ) solve.o
+	$(CC) $(CCFLAGS) $(OBJ) solve.o -o $@
 
-test : $(OBJ) test.cpp
-	$(CC) $(CCFLAGS) $(OBJ) test.cpp -o $@ -lcppunit
+test : $(OBJ) test.o
+	$(CC) $(CCFLAGS) $(OBJ) test.o -o $@ -lcppunit
 
 clean :
 	rm $(EXE) $(OBJ) *~ 	\
