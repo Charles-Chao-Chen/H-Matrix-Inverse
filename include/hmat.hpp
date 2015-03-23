@@ -22,11 +22,14 @@ public:
   //  it also accepts a single right hand size as an eigen vector
   EMatrix solve(const EMatrix&) const;
 
+  // matrix vector product
+  EMatrix multiply(const EMatrix&) const;
+  
   // wrapper for solve()
   EMatrix operator/(const EMatrix&) const;
 
-  // matrix vector product
-  EMatrix operator*(const EMatrix&);
+  // wrapper for multiply()
+  EMatrix operator*(const EMatrix&) const;
   
 private:
   

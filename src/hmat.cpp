@@ -202,6 +202,12 @@ template <SubProblem type>
 }
 
 // A * b
-EMatrix HMat::operator*(const EMatrix& b) {
+EMatrix HMat::multiply(const EMatrix& b) const {
   return treeRoot_->multiply(b);
 }
+
+// A * b
+EMatrix HMat::operator*(const EMatrix& b) const {
+  return multiply(b);
+}
+

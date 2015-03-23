@@ -17,9 +17,9 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
 int main(int argc, char *argv[]) {
   
   // default parameters
-  int nx = 32, ny = 32;
-  int numLevels = 3;
-  int maxRank = 16;
+  int nx = 64, ny = 64;
+  int numLevels = 5;
+  int maxRank = 32;
   AdmissType admiss = WEAK;
   int nRhs = 2;
   
@@ -78,68 +78,6 @@ int main(int argc, char *argv[]) {
   t.start();
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
   t.stop(); t.show_elapsed_time("build tree");
-
-  /*
-  // get accuracy and timing for the h-solver
-  t.start();
-  Eigen::MatrixXd x1 = Ah/rhs;
-  t.stop(); t.show_elapsed_time("solver");
-  std::cout << "Fast solver residule : "
-  << (Aperm*x1 - rhs).norm()
-  << std::endl;
-  */
-
-  /*
-  // get accuracy and time for the standard LU method
-  t.start();
-  Eigen::MatrixXd x2 = A.lu().solve( rhs );
-  t.stop();  t.show_elapsed_time();
-  std::cout << "Direct solver residule : "
-  << (A*x2 - rhs).norm()
-  << std::endl;
-  */
-    
-  /*
-  // test the accuracy for the original problem
-  //  i.e. A x = b
-  //      (P*A*P') (P*x) = P*b
-  Eigen::MatrixXd rhsPerm = perm*rhs;
-  Eigen::MatrixXd x3 = Ah.solve( rhsPerm );
-  Eigen::MatrixXd xOrig = perm.inverse()*x3;
-  printf("Residule: %e\n", (A*xOrig - rhs).norm() );
-  */
-    
-  // TODO: use the solver as preconditioner for
-  //  fix point iterationa
-  // (1) implement maxRank : done
-  // note: the accuracy is 1.0e with less rank than 16
-  // (2) implement hmat * vec : done
-  // note: this is not necessary for this purpose
-  // (3) implement fix point iteration : done
-  
-
-  /*
-  // debugging hmat * vec
-  Eigen::MatrixXd x = Eigen::MatrixXd::Random(N, 1);
-  std::cout << "correct : \n" << Aperm*x << std::endl;
-  std::cout << "hmat * vec : \n" << Ah*x << std::endl;
-  std::cout << "debugging hmat * vec : "
-  << (Ah*x - Aperm*x).norm()
-  << std::endl;
-  */
-
-  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
-  FixedPoint fp;
-  //Eigen::VectorXd fp_x0 = fp.solve(Aperm, b);
-  Eigen::VectorXd fp_x1 = fp.solve(Aperm, b, Ah);
-
-  /*
-  //Eigen::VectorXd b = EMatrix::Random(N,2);
-  Eigen::VectorXd b = Eigen::VectorXd::Random(N);
-  ConjugateGradient cg;
-  Eigen::VectorXd cg_x0 = cg.solve(Aperm, b);
-  Eigen::VectorXd cg_x1 = cg.solve(Aperm, b, Ah);
-  */
   
   /*
   // TODO: use as preconditioner for GMRES

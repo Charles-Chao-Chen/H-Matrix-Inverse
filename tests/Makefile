@@ -48,6 +48,7 @@ profile: $(EXE)
 	@echo "==================================="
 
 # run tests
+check: CCFLAGS += -O2
 check: test
 	./test
 
