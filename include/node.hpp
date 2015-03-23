@@ -2,7 +2,7 @@
 #define NODE_HPP
 
 #include "dim2.hpp"
-#include "helper.hpp"
+#include "macros.hpp"
 
 #include <iostream>
 

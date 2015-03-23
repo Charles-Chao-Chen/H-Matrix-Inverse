@@ -1,4 +1,5 @@
 #include "node.hpp"
+#include "utility.hpp"
 
 #include <assert.h>
 #include <stdio.h>
