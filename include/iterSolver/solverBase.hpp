@@ -17,21 +17,13 @@ public:
   virtual EMatrix solve(const EMatrix&, const EVector&) = 0;
   virtual EMatrix solve(const EMatrix&, const EVector&, const Pcond&) = 0;
   
-  /*
-  //EMatrix solve(const EMatrix&, const EMatrix&, );
-  EMatrix solve(const EMatrix&, const EMatrix&, const double);
-  EMatrix solve(const EMatrix&, const EMatrix&, const double,
-		const int);
-  EMatrix solve(const EMatrix&, const EMatrix&, const double,
-		const int, );
-  */
 public:
   // stopping criteria for iterative solve
   static int    ITER_MAX_NUM;
   static double ITER_TOL;
 
 protected:
-  int num_iter;
+  int    num_iter;
   double time;
   double residule;
 };
