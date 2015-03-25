@@ -10,7 +10,6 @@ Note: the code uses Eigen linear algebra library:
  the tests.
 
 TO run the test:
- cd test/
- make
- ./solve
+ cd tests/
+ make check
 
