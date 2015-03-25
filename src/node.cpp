@@ -80,95 +80,78 @@ HierNode::HierNode
  const Rect2& srcSize, const Rect2& tgtSize,
  const int curLevel,   const int numLevels,
  const int maxRank,    const AdmissType admissType)
-
-//: source_ (source),  target_ (target),
-//  : srcSize_(srcSize), tgtSize_(tgtSize)
-  : Node(tgtSize.area(), srcSize.area())
+  
+  : Node( tgtSize.area(), srcSize.area() )
 {
 
 #ifdef DEBUG
   printf("Build h-tree at level : %d\n", curLevel);
 #endif
 
-  /*
-  // low rank block
-  if ( Admissible( source_, target_, admissType ) ) {
-    nodeType = LOWRANK;
-    ComputeLowRank_SVD( UMat, VMat, A, maxRank );
-  }
-    
-  // dense block
-  else if (curLevel == numLevels-1) {
-    blockType = DENSE;
-    DMat = A;
-  }
-*/
-    
   // hierarchical block,
   //  sub-divide the grid into 2 x 2 blocks and
   //  the matrix will be divided into 16 pieces
   //  else {
   //nodeType = HIERARCHY;
 
-    // Morton order is described in the following wiki page:
-    //  http://en.wikipedia.org/wiki/Z-order_curve
-    // Here the (grid) order looks like :
-    // -----------
-    // | 2  |  3 |
-    // -----------
-    // | 0  |  1 |
-    // -----------
-    // or in binary form:
-    //     -------------
-    // y=1 | 10  |  11 |
-    //     -------------
-    // y=0 | 00  |  01 |
-    //     -------------
-    //       x=0    x=1
-    // (which happens to be the same as the natural order)
+  // Morton order is described in the following wiki page:
+  //  http://en.wikipedia.org/wiki/Z-order_curve
+  // Here the (grid) order looks like :
+  // -----------
+  // | 2  |  3 |
+  // -----------
+  // | 0  |  1 |
+  // -----------
+  // or in binary form:
+  //     -------------
+  // y=1 | 10  |  11 |
+  //     -------------
+  // y=0 | 00  |  01 |
+  //     -------------
+  //       x=0    x=1
+  // (which happens to be the same as the natural order)
 
-    // size of the children block along every dimension
-    Rect2 xTgtSize = tgtSize.x_bisection();
-    Rect2 yTgtSize = tgtSize.y_bisection();
-    Rect2 xSrcSize = srcSize.x_bisection();
-    Rect2 ySrcSize = srcSize.y_bisection();
+  // size of the children block along every dimension
+  Rect2 xTgtSize = tgtSize.x_bisection();
+  Rect2 yTgtSize = tgtSize.y_bisection();
+  Rect2 xSrcSize = srcSize.x_bisection();
+  Rect2 ySrcSize = srcSize.y_bisection();
       
-    // offset in the matrix, starting from row 0 and column 0
-    for (int t=0, startRow=0; t<4; t++) {
-      Point2 tIdx = ZorderIdx( t );
-      Point2 tgtChild( 2*target + tIdx );
-      Rect2  tgtSizeChild( xTgtSize[ tIdx.x_ ], yTgtSize[ tIdx.y_ ] );
+  // offset in the matrix, starting from row 0 and column 0
+  for (int t=0, startRow=0; t<4; t++) {
+    Point2 tIdx = ZorderIdx( t );
+    Point2 tgtChild( 2*target + tIdx );
+    Rect2  tgtSizeChild( xTgtSize[ tIdx.x_ ], yTgtSize[ tIdx.y_ ] );
 	
-      for (int s=0, startCol=0; s<4; s++) {
-	Point2 sIdx = ZorderIdx( s );
-	Point2 srcChild( 2*source + sIdx );
-	Rect2  srcSizeChild( xSrcSize[ tIdx.x_ ], ySrcSize[ tIdx.y_ ] );
+    for (int s=0, startCol=0; s<4; s++) {
+      Point2 sIdx = ZorderIdx( s );
+      Point2 srcChild( 2*source + sIdx );
+      Rect2  srcSizeChild( xSrcSize[ tIdx.x_ ], ySrcSize[ tIdx.y_ ] );
 
-	int     lChild = curLevel+1;	
-	EMatrix Achild
-	  = A.block( startRow, startCol,
-		     tgtSizeChild.area(), srcSizeChild.area() );
+      int     lChild = curLevel+1;	
+      EMatrix Achild = A.block( startRow, startCol,
+				tgtSizeChild.area(),
+				srcSizeChild.area() );
 
-	if (  Admissible( srcChild, tgtChild, admissType ) ) {
-	  children[t][s] = new LowrankNode(Achild, maxRank);
-	}
-	else if ( lChild == numLevels-1 ) {
-	  children[t][s] = new DenseNode(Achild);
-	}
-	else { 
-	  children[t][s] = new HierNode(Achild,
-					srcChild,     tgtChild,
-					srcSizeChild, tgtSizeChild,
-					lChild,       numLevels,
-					maxRank,      admissType);
-	}
-	// update column offset
-	startCol += srcSizeChild.area();
+      if (  Admissible( srcChild, tgtChild, admissType ) ) {
+	children[t][s] = new LowrankNode(Achild, maxRank);
       }
-      // update row offset
-      startRow += tgtSizeChild.area();
+      else if ( lChild == numLevels-1 ) {
+	children[t][s] = new DenseNode(Achild);
+      }
+      else { 
+	children[t][s] = new HierNode(Achild,
+				      srcChild,     tgtChild,
+				      srcSizeChild, tgtSizeChild,
+				      lChild,       numLevels,
+				      maxRank,      admissType);
+      }
+      // update column offset
+      startCol += srcSizeChild.area();
     }
-    //}
+    // update row offset
+    startRow += tgtSizeChild.area();
+  }
 }
 
 bool HierNode::is_leaf() const { return false; }
