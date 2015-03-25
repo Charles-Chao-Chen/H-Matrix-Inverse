@@ -17,9 +17,9 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec);
 int main(int argc, char *argv[]) {
   
   // default parameters
-  int nx = 64, ny = 64;
-  int numLevels = 5;
-  int maxRank = 32;
+  int nx = 32, ny = 32;
+  int numLevels = 3;
+  int maxRank = 16;
   AdmissType admiss = WEAK;
   int nRhs = 2;
   
@@ -78,6 +78,9 @@ int main(int argc, char *argv[]) {
   t.start();
   HMat Ah(Aperm, maxRank, numLevels, admiss, nx, ny);
   t.stop(); t.show_elapsed_time("build tree");
+
+  Eigen::MatrixXd x = Ah/rhs;
+  std::cout << "residule : " << (Aperm*x - rhs).norm() << std::endl;
   
   /*
   // TODO: use as preconditioner for GMRES

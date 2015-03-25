@@ -2,6 +2,21 @@
 
 #include <iostream>
 
+// cast base pointer to derived pointer
+// Gave up this approach. Instead, added virtual methods
+//  in the base class
+/*
+template <typename T>
+static const T* cast_ptr(const Node* p) {
+
+  const T* cp = dynamic_cast<const T*>(p);
+#ifdef DEBUG
+  if (cp == 0) ErrorMessage("Null Pointer");
+#endif
+  return cp;
+}
+*/
+
 // the enum type and NewRHS() function aim at forming the
 //  right hand side for the sub-problem with
 //  part of the original right hand side and the U matrix
@@ -46,6 +61,7 @@ HMat::HMat
   Rect2  rootSrcSize(xSize, ySize);
   Rect2  rootTgtSize(xSize, ySize);
 
+  assert( numLevels_ > 1);
   treeRoot_ = new HierNode(A,
 			   rootSource,  rootTarget,
 			   rootSrcSize, rootTgtSize,
@@ -66,7 +82,6 @@ void HMat::DestroyNode(const Node* node) {
     for (int i=0; i<4; i++)
       for (int j=0; j<4; j++) {
 	const Node* c = node->child(i,j);
-	assert( c != NULL );
 	DestroyNode( c );
       }
     delete node;
@@ -78,16 +93,14 @@ EMatrix HMat::operator/( const EMatrix& rhs ) const {
 }
 
 EMatrix HMat::solve( const EMatrix& rhs ) const {
-  /*
 #ifdef DEBUG
   std::cout << "Starting fast solver ..." << std::endl;
 #endif
   return solve( rhs, treeRoot_ );
-  */
 }
 
 EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) const {
-  /*
+
   if (node->is_leaf()) {
     const EMatrix& denseBlock = node->dmat();
     return denseBlock.lu().solve( rhs );
@@ -114,7 +127,6 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) const {
   EMatrix x0 = solve_2x2( rhsSub0, node, 0 );
   EMatrix x1 = solve_2x2( rhsSub1, node, 2 );
   return  AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
-  */
 }
 
 // standard HODLR solver for the following matrix structure
@@ -130,7 +142,7 @@ EMatrix HMat::solve( const EMatrix& rhs, const Node* node ) const {
 //  refering to : http://arxiv.org/abs/1403.5337
 EMatrix HMat::solve_2x2
 (const EMatrix& rhs, const Node* node, int first) const {
-/*
+
   int second = first + 1;
   const EMatrix& U0 = node->child( first, second )->umat();
   const EMatrix& U1 = node->child( second, first )->umat();
@@ -150,10 +162,10 @@ EMatrix HMat::solve_2x2
   const EMatrix x0 = solve( rhsSub0, node->child( first,  first  ) );
   const EMatrix x1 = solve( rhsSub1, node->child( second, second ) );
   return AssembleSolution( x0, x1, rhs.cols(), V0, V1 );
-*/
 }
 
-EMatrix  AssembleSolution //static
+// static function
+EMatrix  AssembleSolution
 (const EMatrix& x0, const EMatrix& x1, int rhs_cols,
  const EMatrix& V0, const EMatrix& V1) {
 
@@ -191,7 +203,8 @@ EMatrix  AssembleSolution //static
   return result;
 }
 
-template <SubProblem type> //static
+// static function
+template <SubProblem type> 
 EMatrix NewRHS(const EMatrix& oldRHS, const EMatrix& U) {
 #ifdef DEBUG
   assert( type==TOP || type==BOTTOM );
@@ -201,20 +214,23 @@ EMatrix NewRHS(const EMatrix& oldRHS, const EMatrix& U) {
     // rhs = [ rhsTop, U ]
     rhs << oldRHS.topRows( U.rows() ), U;
   }
-  else {
+  else if (type == BOTTOM){
     // rhs = [ rhsBot, U ]
     rhs << oldRHS.bottomRows( U.rows() ), U;
   }
+  else
+    ErrorMessage("Wrong type");
+  
   return rhs;
 }
 
 // A * b
 EMatrix HMat::multiply(const EMatrix& b) const {
-  //return treeRoot_->multiply(b);
+  return treeRoot_->multiply(b);
 }
 
 // A * b
 EMatrix HMat::operator*(const EMatrix& b) const {
-  //return multiply(b);
+  return multiply(b);
 }
 

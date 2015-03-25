@@ -1,6 +1,8 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+#include <typeinfo> // for typeid
+
 #include <Eigen/Dense>
 typedef Eigen::MatrixXd EMatrix;
 typedef Eigen::VectorXd EVector;
@@ -17,10 +19,16 @@ enum AdmissType {
 };
 
 // error message
-#define ErrorMessage(msg) std::cerr		\
-  << "Error in file : " << __FILE__		\
-  << ", function : " << __func__		\
-  << ", line : " << __LINE__			\
-  << "\n\t" << msg << std::endl
+#include <cstdlib> // for EXIT_FAILURE
+#include <cassert>
+#define ErrorMessage(msg) {			\
+    std::cerr					\
+      << "Error in file : " << __FILE__		\
+      << ", function : " << __func__		\
+      << ", line : " << __LINE__		\
+      << "\n\t" << msg << std::endl;		\
+    assert(false);				\
+  }
+  //exit(EXIT_FAILURE)
 
 #endif // MACROS_H

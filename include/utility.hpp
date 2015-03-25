@@ -40,13 +40,4 @@ inline Point2 ZorderIdx( int idx ) {
   return Point2( idx>>1, idx&1 );
 }
 
-EMatrix FormUfrom2x2
-(const EMatrix& U0, const EMatrix& U1,
- const EMatrix& U2, const EMatrix& U3);
-
-EMatrix FormVfrom2x2
-(const EMatrix& V0, const EMatrix& V1,
- const EMatrix& V2, const EMatrix& V3);
-
-
 #endif // HELPER_H
