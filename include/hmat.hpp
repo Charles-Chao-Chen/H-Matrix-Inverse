@@ -41,7 +41,7 @@ private:
   (const EMatrix&, const Node*, int) const;
 
   // helper function for the destructor
-  void DestroyNode(Node* node);
+  void DestroyNode(const Node* node);
   
   // global information of the tree
   int maxRank_;

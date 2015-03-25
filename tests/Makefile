@@ -1,6 +1,6 @@
 CC = g++
 
-#============= Eigen path =============
+#************* Eigen path *************
 
 # stanford corn machine
 EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
@@ -9,7 +9,8 @@ EIGEN   = ~/Software/eigen-eigen-10219c95fe65/
 ifeq ($(shell uname -n), sapling)
 EIGEN   = /home/cchen10/Software/eigen-eigen-10219c95fe65
 endif
-#======================================
+
+#**************************************
 
 INCLUDE = -I ../include/ -I ../include/helper/ \
 	  -I ../include/iterSolver/ -I $(EIGEN)
@@ -55,14 +56,14 @@ check: test
 test : $(OBJ) test.o
 	$(CC) $(CCFLAGS) $(OBJ) test.o -o $@ -lcppunit
 
-%.o : %.cpp
-	$(CC) $(CCFLAGS) -c $< -o $@
-
 $(EXE) : $(OBJ) solve.o
 	$(CC) $(CCFLAGS) $(OBJ) solve.o -o $@
 
+%.o : %.cpp
+	$(CC) $(CCFLAGS) -c $< -o $@
+
 clean :
-	rm $(EXE) $(OBJ) *~ 	\
+	rm $(EXE) $(OBJ) test solve.o test.o *~ 	\
 	../src/*~		../include/*~    	\
 	../src/iterSolver/*~	../include/iterSolver/*~  \
 	../include/helper/*~	../src/helper/*~
